@@ -1,0 +1,676 @@
+---
+title: Music Retailer Sales SQL Project
+date: "`r {Sys.setlocale('LC_TIME', 'C'); format(Sys.Date(), '%B %d, %Y')}`"
+author: Dominik Schulz,
+output:
+  bookdown::github_document2:
+    toc: true
+    toc_depth: 2
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = FALSE,
+  fig.align = 'center'
+)
+
+library(RMySQL)
+con <- dbConnect(RMySQL::MySQL(),
+                 host = "localhost", 
+                 dbname = "musical_retail_germany",
+                 port = 3306, 
+                 user = "Dominik", 
+                 password = "mysql")
+library(knitr)
+library(kableExtra)
+library(reticulate)
+reticulate::use_virtualenv("my-env", required = TRUE)
+
+money_format <- function(x) {
+  paste0("€", format(round(x, 2), big.mark = ",", decimal.mark = ".", scietific = FALSE, nsmall = 2))
+}
+trim_chr_cols <- function(x) {
+  w <- purrr::map_lgl(x, function(.x) {is.character(.x)})
+  x[w] <- purrr::map_df(x[w], function(.x) {
+    trimws(.x)
+  })
+  x
+}
+remove_format <- function(x) {
+  as.numeric(gsub(
+    pattern = "[,%€]",
+    replacement = "",
+    x = x
+  ))
+}
+```
+
+
+**Note:** This entire project is currently a work in progress and not yet finished. It will be updated regularly.
+
+# Executive summary
+
+1. The company's increase in revenue is mainly driven by its increase in number of customers, whereas the average number of orders per active customer is decreasing slowly over time. We recommend measures, such as special discount events and stamp card systems, to activate sleeping clients and increase the number of orders per active customer. These effects would also affect new customers.
+
+# Company & data information
+
+The company in question is an online retailer for music equipment and related items. The data at hand gives information about daily sales of the company for the entirety of the years 2022, 2023, 2024, and 2025. Related information on registered customers, sale items, products, inventory movements, and so on is also provided.
+
+**Note:** The data used is the synthetic SQL database `musical_retail_germany.sql` provided in my GitHub repository [dschulz13/musical_retail_germany](https://github.com/dschulz13/musical_retail_germany).
+
+The available data is structured as displayed in Figure \@ref(fig:fig-struct).
+
+```{r fig-struct, out.width = "80%", out.height = "80%", fig.cap = "An overview of the structure of the musical_retail_germany SQL database."}
+knitr::include_graphics("structure_musical_retail_germany.png")
+```
+
+We have the eight interconnected tables `sales`, 'sale_items', `products`, `product_prices`, `customers`, `suppliers`, `inventory_in`, and `inventory_out`.
+
+# Business questions
+
+Given the provided data, the following six business topics with sub-questions arise. This project aims to answer them.
+
+1. **Revenue & sales performance**
+  - How much was sold in 2025?
+  - How did 2025 compare with 2024?
+  - Is revenue growing?
+  - How many registered customers and conducted orders are there?
+  - What is the average order value?
+  - What is the source of the increase/decrease in revenue?
+
+2. **Customer health**
+  - How many active customers are there in 2025?
+    - How many of them are new and how many are returning?
+  - How concentrated is revenue among customers?
+  - What does customer purchasing frequency look like?
+  - Are there high-value customer segments?
+  - Are customers becoming more or less valuable?
+  
+3. **Product portfolio**
+  - Which categories/brands/products drive revenue?
+  - Which products are growing?
+  - Which products have poor sales?
+  - How concentrated is revenue among products?
+  - Which products are newly introduced?
+  - Which products have been discontinued?
+
+4. **Pricing**
+  - Which products experienced major price changes?
+  - What happened to sales volumes after price changes?
+  - Which products increased in price without losing much volume?
+  - Which products became cheaper but sold considerably more?
+  - Which brands/categories have the highest prices?
+  
+5. **Inventory health**
+  - Which products are overstocked?
+  - Which products have very high inventory turnover?
+  - Which products appear to be slow-moving?
+  - How much capital is tied up in inventory?
+  - Are discontinued products still sitting in inventory?
+  - Which products might need replenishment?
+  
+6. **Supplier health**
+  - Which suppliers provide the most products?
+  - Which suppliers account for the most incoming units?
+  - Is the company highly dependent on a small number of suppliers?
+  - Which suppliers serve strategically important products?
+  - What does the supplier base look like geographically?
+
+# Applied tools
+
+Data manipulation and calculations are conducted with [MySQL](https://www.mysql.com/de/). Graphics are created using [Python](https://www.python.org/). For the report and table creation, the R Markdown engine was used.
+
+# Procedural structure
+
+1. **Data cleaning**
+
+Inconsistencies, like leading/trailing whitespace, uneven capitalization of names, etc., were detected in selected tables. Hence, a first cleaning step was done leading to the SQL view objects `customers_cleaned`, `products_cleaned`, and `suppliers_cleaned`, which can be reused for future analysis.
+
+2. **Sequential table creation**
+
+Tabular results were created from the cleaned data in a sequential way to answer the stated business questions in Section 3.
+
+3. **Sequential graphic creation**
+
+Where meaningful, supporting graphics were created.
+
+4. **Insights & recommendations**
+
+From the tabular and graphical outputs, insights were found to answer the business questions in Section 3 and corresponding business recommendations were formulated.
+
+# Detailed project results
+
+Here, detailed answers (with tables and figures) to the business questions in Section 3 as well as corresponding business recommendations can be found. Results are stated by topic and business question.
+
+## Revenue & sales performance
+
+### How much was sold in 2025?
+
+```{sql connection = con, output.var = "sql_q1", warning = FALSE, echo = FALSE}
+# Total sales in year 2025
+SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2025
+FROM SALES
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
+```
+
+```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE}
+# Total sales in year 2024
+SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2024
+FROM SALES
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
+```
+
+```{r, echo = FALSE}
+sql_q1 <- as.numeric(sql_q1)
+sql_q1_2 <- as.numeric(sql_q1_2)
+abs_change <- abs(sql_q1 - sql_q1_2)
+rel_change <- abs(round(100 * abs_change / sql_q1_2, 2))
+inc_dec <- if (abs_change < 0) {
+  "decrease"
+} else {
+  "increase"
+}
+```
+
+
+We derive the **total amount of sales** (total sales minus shipping fees) for the year 2025 to be **`r money_format(sql_q1)`**.
+
+```{sql connection = con, output.var = "sql_q1_monthly1", warning = FALSE, echo = FALSE}
+# Total sales by month in year 2025
+WITH sales_long_tab AS (
+SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
+GROUP BY EXTRACT(MONTH FROM sale_timestamp))
+SELECT
+  	MAX(CASE WHEN month_numb = 1 THEN total_sales END) AS January,
+    MAX(CASE WHEN month_numb = 2 THEN total_sales END) AS February,
+    MAX(CASE WHEN month_numb = 3 THEN total_sales END) AS March,
+	  MAX(CASE WHEN month_numb = 4 THEN total_sales END) AS April,
+    MAX(CASE WHEN month_numb = 5 THEN total_sales END) AS May,
+    MAX(CASE WHEN month_numb = 6 THEN total_sales END) AS June,    
+    MAX(CASE WHEN month_numb = 7 THEN total_sales END) AS July,  
+    MAX(CASE WHEN month_numb = 8 THEN total_sales END) AS August,
+    MAX(CASE WHEN month_numb = 9 THEN total_sales END) AS September,
+    MAX(CASE WHEN month_numb = 10 THEN total_sales END) AS October,
+    MAX(CASE WHEN month_numb = 11 THEN total_sales END) AS November,
+    MAX(CASE WHEN month_numb = 12 THEN total_sales END) AS December
+FROM sales_long_tab;
+```
+
+```{r, echo = FALSE}
+sql_q1_monthly1 <- purrr::map_df(sql_q1_monthly1, function(.x) {
+  money_format(.x)
+})
+```
+
+```{sql connection = con, output.var = "sql_q1_monthly2", warning = FALSE, echo = FALSE}
+# Total sales by month in year 2025
+WITH sales_long_tab AS (
+SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
+GROUP BY EXTRACT(MONTH FROM sale_timestamp))
+SELECT
+  	CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 1 THEN total_sales END) / SUM(total_sales), 2), '%') AS January,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 2 THEN total_sales END) / SUM(total_sales), 2), '%') AS February,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 3 THEN total_sales END) / SUM(total_sales), 2), '%') AS March,
+	  CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 4 THEN total_sales END) / SUM(total_sales), 2), '%') AS April,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 5 THEN total_sales END) / SUM(total_sales), 2), '%') AS May,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 6 THEN total_sales END) / SUM(total_sales), 2), '%') AS June,    
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 7 THEN total_sales END) / SUM(total_sales), 2), '%') AS July,  
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 8 THEN total_sales END) / SUM(total_sales), 2), '%') AS August,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 9 THEN total_sales END) / SUM(total_sales), 2), '%') AS September,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 10 THEN total_sales END) / SUM(total_sales), 2), '%') AS October,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 11 THEN total_sales END) / SUM(total_sales), 2), '%') AS November,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 12 THEN total_sales END) / SUM(total_sales), 2), '%') AS December
+FROM sales_long_tab;
+```
+
+Table \@ref(tab:sales-monthly-tab) shows the monthly total sales of the year 2025. The most lucrative months are hence those leading up to Christmas, i.e. October, November and December, with **`r sql_q1_monthly1$October`**, **`r sql_q1_monthly1$November`**, and **`r sql_q1_monthly1$December`**, respectively. Those three months together account for approx. 31.00% of the year's sales. 
+
+```{r sales-monthly-tab, echo = FALSE}
+tab_q1_monthly <- as.data.frame(dplyr::bind_rows(sql_q1_monthly1, sql_q1_monthly2))
+rownames(tab_q1_monthly) <- c("Absolute", "Relative")
+kable(tab_q1_monthly, caption = "Monthly total sales (absolute and relative) of the year 2025.", row.names = TRUE, align = paste0(rep("r", 12), collapse = ""), format = "pipe")
+```
+
+
+### How did 2025 compare with 2024?
+
+The total sales of **`r money_format(sql_q1)`** in the year 2025 is an **absolute `r inc_dec`** of **`r money_format(abs_change)`** and a **relative `r inc_dec`** of **`r rel_change`%** compared to the year 2024, where sales of **`r money_format(sql_q1_2)`** were achieved.
+
+```{sql connection = con, output.var = "sql_q2_monthly", warning = FALSE, echo = FALSE}
+# Monthly sales comparison between 2024 and 2025
+WITH suma_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) BETWEEN 2024 AND 2025
+GROUP BY EXTRACT(YEAR FROM sale_timestamp), EXTRACT(MONTH FROM sale_timestamp), MONTHNAME(sale_timestamp)),
+lag_tab AS (
+SELECT year_numb, month_numb, month_name, LAG(total_sales, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS total_sales_2024, total_sales AS total_sales_2025
+FROM suma_tab),
+comp_tab AS (
+SELECT month_name, total_sales_2024, total_sales_2025 FROM lag_tab
+WHERE year_numb = 2025
+ORDER BY month_numb ASC)
+SELECT month_name, CONCAT('€', FORMAT(total_sales_2024, 2)) AS total_sales_2024,
+	CONCAT('€', FORMAT(total_sales_2025, 2)) AS total_sales_2025,
+    CONCAT('€', FORMAT(total_sales_2025 - total_sales_2024, 2)) AS abs_change,
+    CONCAT(ROUND(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%') AS rel_change
+FROM comp_tab;
+```
+
+```{r sales-monthly-comp, echo = FALSE}
+x <- knitr::kable(sql_q2_monthly,
+             col.names = c("Month", "Sales 2024", "Sales 2025", "Absolute change", "Relative change"), align = c("l", "r", "r", "r", "r"), caption = "Monthly sales comparison between the years 2024 and 2025.", format = "pipe")
+x[[4]] <- "|:--------|-------:|-------:|--------------:|--------:|"
+x
+```
+
+As visible from Table \@ref(tab:sales-monthly-comp), all months show an increase in 2025 compared to the corresponding month of the previous year. The lowest increase is currently shown in January, February and April. Conversely, the largest increases are observable in October, November and December.
+
+### Is revenue growing?
+
+```{sql connection = con, output.var = "sql_q3", warning = FALSE, echo = FALSE}
+# Total revenue increase in % by month for each year
+WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur) AS revenue
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp), EXTRACT(MONTH FROM sale_timestamp), MONTHNAME(sale_timestamp)),
+lag_tab AS (
+SELECT year_numb, month_numb, month_name, LAG(revenue, 3) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2022,
+	LAG(revenue, 2) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2023,
+    LAG(revenue, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2024,
+    revenue AS rev_2025
+FROM agg_tab)
+SELECT month_name, CONCAT(ROUND(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%') AS change_22_23,
+	CONCAT(ROUND(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%') AS change_23_24,
+    CONCAT(ROUND(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%') AS change_24_25
+FROM lag_tab
+WHERE year_numb = 2025
+ORDER BY month_numb;
+```
+
+```{r revenue-monthly-comp, echo = FALSE}
+x <- knitr::kable(sql_q3,
+             col.names = c("Month", "Change 2022 to 2023", "Change 2023 to 2024", "Change 2024 to 2025"), align = c("l", "r", "r", "r"), caption = "Yearly relative revenue changes by month 2022 through 2025.", format = "pipe")
+x
+```
+
+Following Table \@ref(tab:revenue-monthly-comp), revenue streams keep increasing over the years. While for March through December, the rate of revenue increase has itself been increasing from 2024 to 2025, it has been declining for January and February. Further investigation of reasons for this phenomenon is recommended.
+
+The increase rate in revenue has most strongly risen in March between 2024 and 2025 by more than eight percentage points. Further strong months are September through December, where the rate increased by approx. five to seven percentage points in the year 2025.
+
+### How many registered customers and conducted orders are there?
+
+```{sql connection = con, output.var = "sql_q4_1", warning = FALSE, echo = FALSE}
+WITH year_tab AS (
+SELECT customer_id,
+	CASE
+		WHEN EXTRACT(YEAR FROM signup_timestamp) <= 2022 THEN 2022
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2023 THEN 2023
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2024 THEN 2024
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2025 THEN 2025
+	END AS registered_by
+FROM customers_cleaned),
+agg_tab AS (
+SELECT registered_by, COUNT(DISTINCT customer_id) AS new_registrations
+FROM year_tab
+GROUP BY registered_by),
+sum_tab AS (
+SELECT registered_by AS year, SUM(new_registrations) OVER (ORDER BY registered_by ASC) AS cum_registrations
+FROM agg_tab)
+SELECT
+	FORMAT(MAX(CASE WHEN year = 2022 THEN cum_registrations END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN year = 2023 THEN cum_registrations END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN year = 2024 THEN cum_registrations END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN year = 2025 THEN cum_registrations END), 0) AS year_2025
+FROM sum_tab;
+```
+
+```{r reg-cust-tab, echo = FALSE}
+knitr::kable(
+  sql_q4_1,
+  col.names = c("2022", "2023", "2024", "2025"),
+  format = "pipe",
+  align = "rrrr",
+  caption = "Cumulative number of registered customers by year."
+)
+```
+
+Table \@ref(tab:reg-cust-tab) shows that the number of registered customers could almost be doubled since 2022. In 2025, the number of overall registered customers on the company's platform is therefore at `r as.character(sql_q4_1[["year_2025"]])`.
+
+```{sql connection = con, output.var = "sql_q4_2", warning = FALSE, echo = FALSE}
+WITH id_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, customer_id FROM sales),
+agg_tab AS (
+SELECT year_numb, COUNT(DISTINCT customer_id) AS numb_active_cust
+FROM id_tab
+GROUP BY year_numb)
+SELECT
+	FORMAT(MAX(CASE WHEN year_numb = 2022 THEN numb_active_cust END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN year_numb = 2023 THEN numb_active_cust END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN year_numb = 2024 THEN numb_active_cust END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN year_numb = 2025 THEN numb_active_cust END), 0) AS year_2025
+FROM agg_tab;
+```
+
+```{r act-cust-tab, echo = FALSE}
+knitr::kable(
+  sql_q4_2,
+  col.names = c("2022", "2023", "2024", "2025"),
+  format = "pipe",
+  align = "rrrr",
+  caption = "Number of active customers by year."
+)
+```
+
+```{r, echo = FALSE}
+all_vals <- remove_format(as.character(sql_q4_2)) / remove_format(as.character(sql_q4_1[1, ]))
+min_v <- paste0(sprintf("%.2f", 100 * min(all_vals)), "%")
+max_v <- paste0(sprintf("%.2f", 100 * max(all_vals)), "%")
+val_2025 <- paste0(sprintf("%.2f", 100 * tail(all_vals, 1)), "%")
+```
+
+
+In contrast, as can be seen from Table \@ref(tab:act-cust-tab), the amount of **active customers** - those having placed an order at least once in the corresponding year - is always similar yet smaller than the number of registered customers. Overall, the share of active customers from the registered ones for any given year seems to sit between **`r min_v`** and **`r max_v`**, with **`r val_2025`** in **2025**.
+
+### What is the average order value?
+
+```{sql connection = con, output.var = "sql_q5", warning = FALSE, echo = FALSE}
+WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, AVG(total_price_eur) AS average_order_eur
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp))
+SELECT
+	CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2022 THEN average_order_eur END), 2)) AS year_2022,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2023 THEN average_order_eur END), 2)) AS year_2023,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2024 THEN average_order_eur END), 2)) AS year_2024,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2025 THEN average_order_eur END), 2)) AS year_2025
+FROM agg_tab;
+```
+
+```{r tab-average-order, echo = FALSE}
+x <- knitr::kable(sql_q5,
+             col.names = c("2022", "2023", "2024", "2025"), align = c("r", "r", "r", "r"), caption = "Yearly average order value for years 2022 through 2025.", format = "pipe")
+x
+```
+
+According to Table \@ref(tab:tab-average-order), the yearly average order value has been decreasing from 2022 to 2023. However, afterwards until 2025 it kept increasing, implying that on average customers tend to spend more money on their orders. The latest average order value (year 2025) is **`r as.character(sql_q5[["year_2025"]])`**.
+
+### What is the source of the increase/decrease in revenue?
+
+
+```{sql connection = con, output.var = "sql_q6_1", warning = FALSE, echo = FALSE}
+(WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, COUNT(*) AS orders_placed
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp))
+SELECT
+	FORMAT(MAX(CASE WHEN sale_year = 2022 THEN orders_placed END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN sale_year = 2023 THEN orders_placed END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN sale_year = 2024 THEN orders_placed END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN sale_year = 2025 THEN orders_placed END), 0) AS year_2025
+FROM agg_tab)
+UNION ALL
+(WITH agg_tab2 AS (
+SELECT tab1.year_numb AS year_numb, ROUND(tab2.orders_placed / tab1.active_cust_count, 2) AS orders_per_capita
+FROM (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, COUNT(DISTINCT customer_id) AS active_cust_count
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp)) AS tab1
+INNER JOIN (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, COUNT(*) AS orders_placed
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp)) AS tab2 ON tab1.year_numb = tab2.sale_year)
+SELECT
+	MAX(CASE WHEN year_numb = 2022 THEN orders_per_capita END) AS year_2022,
+    MAX(CASE WHEN year_numb = 2023 THEN orders_per_capita END) AS year_2023,
+    MAX(CASE WHEN year_numb = 2024 THEN orders_per_capita END) AS year_2024,
+    MAX(CASE WHEN year_numb = 2025 THEN orders_per_capita END) AS year_2025
+FROM agg_tab2);
+```
+
+```{r tab-num-order, echo = FALSE}
+rownames(sql_q6_1) <- c("Number of orders", "Orders per capita")
+x <- knitr::kable(sql_q6_1,
+             col.names = c("2022", "2023", "2024", "2025"), align = c("r", "r", "r", "r"), caption = "Yearly number of orders placed.", format = "pipe", row.names = TRUE)
+x
+```
+
+```{r, echo = FALSE}
+# 2024
+val_2024 <- 3.35 * 2192.33
+# 2025
+val_2025 <- 3.03 * 2268.35
+
+
+rev_incr <- 80000 * 2268.35 - 73500 * 2192.33
+scen1 <- (80000 - 73500) * 2192.33  # order value stay the same
+scen2 <- 73500 * (2268.35 - 2192.33)  # number of orders stays the same
+remaind <- rev_incr - scen1 - scen2
+```
+
+```{sql connection = con, output.var = "sql_q6_2", warning = FALSE, echo = FALSE}
+WITH joined_tab AS (
+SELECT tab1.signup_year, tab2.numb_act_cust, tab1.order_count, tab1.revenue, tab1.eur_per_order FROM (
+WITH comb_tab AS (
+SELECT sa.sale_id, sa.customer_id, 
+	CASE
+		WHEN EXTRACT(YEAR FROM c.signup_timestamp) <= 2024 THEN 'before 2025'
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) = 2025 THEN 'in 2025'
+	END AS signup_year,
+    sa.total_price_eur
+FROM sales AS sa
+INNER JOIN customers AS c ON sa.customer_id = c.customer_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025)
+SELECT signup_year, COUNT(*) AS order_count, SUM(total_price_eur) AS revenue, SUM(total_price_eur) / COUNT(*) AS eur_per_order
+FROM comb_tab
+GROUP BY signup_year) AS tab1
+INNER JOIN (
+WITH c2tab AS (
+SELECT sa.customer_id,
+	CASE
+		WHEN EXTRACT(YEAR FROM c.signup_timestamp) <= 2024 THEN 'before 2025'
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) = 2025 THEN 'in 2025'
+	END AS signup_year
+FROM sales AS sa
+INNER JOIN customers AS c ON sa.customer_id = c.customer_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025)
+SELECT signup_year, COUNT(DISTINCT customer_id) AS numb_act_cust
+FROM c2tab
+GROUP BY signup_year) AS tab2 ON tab1.signup_year = tab2.signup_year)
+SELECT signup_year, FORMAT(order_count, 0) AS order_count, ROUND(order_count / numb_act_cust, 2) AS orders_per_capita,
+	CONCAT('€', FORMAT(revenue, 2)) AS revenue, CONCAT('€', FORMAT(eur_per_order, 2)) AS value_per_order
+FROM joined_tab;
+```
+
+```{r tab62, echo = FALSE}
+x <- knitr::kable(sql_q6_2,
+             col.names = c("Signup year", "Order count", "Orders per capita", "Revenue", "Average order value"), align = c("l", "r", "r", "r", "r"), caption = "Distinction between existing and new customers in 2025.", format = "pipe")
+x
+```
+
+Table \@ref(tab:tab-num-order) suggests that, while the **total number of orders** is **increasing** on the platform, the **average number of orders per active customer** is actually **decreasing** steadily since 2022. Considering Table \@ref(tab:tab-average-order), we conclude that each active customer only spends `r money_format(3.03 * 2268.35)` with the company in 2025 instead of `r money_format(3.35 * 2192.33)` as in 2024. Following our analysis in Section 6.1.4, we know that the share of active customers is also not notably different from usual in 2025 than in other years. Hence, the increase in revenue comes mostly from the fact that the company was able to increase its number of newly registered customers by 5,000 in 2025.
+
+The **revenue increase** from 2024 to 2025 is **`r money_format(rev_incr)`**. A what-if analysis shows that, had the average order value stayed the same as in 2024 but the same rise in the number of orders taken place, the increase in number of orders would have led to an increase in revenue of **`r money_format(scen1)`**. On the other hand, had the number of orders stayed at the level of 2024 but the average order value increased, the increase in revenue would have been **`r money_format(scen2)`**. The remaining **`r money_format(remaind)`** are cross-effects from the increase in both the number of orders and the average order value. Hence, the number of orders is the driving force of the revenue increase.
+
+Table \@ref(tab:tab62) illustrates that the **revenue in 2025** produced by **customers registered in 2024 and before** is only **larger by approx. €3,000,000.00** **than** the total revenue **in 2024**. For that group of customers, the order count is decreasing, as is the amount of orders per capita. The vast share of **new revenue in 2025** comes from the **newly registered clients**, which, while they do not order as frequently, produce roughly **€17,500,000.00** in revenue.
+
+While it is profitable to gain many customers as fast as possible to establish the platform as the main seller for musical equipment, such growth may not be sustainable with a long-term perspective. It is therefore recommended to invest more into strategies to **re-activate existing customers** in the client database, with both the goals to activate sleeping customers and to increase the orders per capita of already active customers. As a suggestion, the company could run a short-term campaign, where they offer long-term clients a discount, or they could implement a stamp card system that leads to future discounts. This would also have the benefit that the number of orders by newly registered customers could be increased at the same time.
+
+## Customer health
+
+### How many active customers are there in 2025?
+
+**Sub-question:** How many of them are new and how many are returning?
+
+
+
+
+
+```{sql connection = con, output.var = "sql_q7", warning = FALSE, echo = FALSE}
+WITH agg_tab AS (
+SELECT customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY sale_timestamp ASC) AS nr_purchase, EXTRACT(YEAR FROM sale_timestamp) AS sale_year
+FROM sales),
+type_tab AS (
+SELECT customer_id,
+	CASE
+		WHEN MIN(nr_purchase) = 1 THEN 'new'
+        ELSE 'returning'
+	END AS customer_type
+FROM agg_tab
+WHERE sale_year = 2025
+GROUP BY customer_id),
+count_tab AS (
+SELECT customer_type, COUNT(*) AS customer_count
+FROM type_tab
+GROUP BY customer_type),
+abs_tab AS (
+SELECT
+	MAX(CASE WHEN customer_type = 'returning' THEN customer_count END) AS returning_cust,
+    MAX(CASE WHEN customer_type = 'new' THEN customer_count END) AS new_cust
+FROM count_tab)
+(SELECT
+	FORMAT(returning_cust, 0) AS 'Returning',
+    FORMAT(new_cust, 0) AS 'New',
+    FORMAT(returning_cust + new_cust, 0) AS 'Total'
+FROM abs_tab)
+UNION ALL
+(SELECT
+	CONCAT(ROUND(100 * returning_cust / (returning_cust + new_cust), 2), '%') AS 'Returning',
+    CONCAT(ROUND(100 * new_cust / (returning_cust + new_cust), 2), '%') AS 'New',
+    '100.00%' AS 'Total'
+FROM abs_tab);
+```
+
+```{r tab7, echo = FALSE}
+rownames(sql_q7) <- c("Absolute", "Relative")
+x <- knitr::kable(sql_q7,
+             col.names = c("Returning", "New", "Total"), align = c("r", "r", "r"), caption = "New and returning customers in 2025.", format = "pipe")
+x[[4]] <- "|:------------|---------------:|-----------:|--------------:|"
+x
+```
+
+\@ref(tab:tab7) highlights that in the **year 2025**, the company has **`r sql_q7$Total[[1]]` active customers**, i.e. customers who did at least one purchase with the company. Given that a new customer is a customer doing the very first purchase with the company (not the registration on the platform), we see that there are **`r sql_q7$New[[1]]` new active customers** (**`r sql_q7$New[[2]]`**) and **`r sql_q7$Returning[[1]]` returning active customers** (**`r sql_q7$Returning[[2]]`**).  
+
+### How concentrated is revenue among customers?
+
+```{sql connection = con, output.var = "sql_q8", warning = FALSE, echo = FALSE}
+WITH pre_tab AS (
+SELECT f.thousands + g.tthousands AS lower_bound, LEAD(f.thousands + g.tthousands) OVER (ORDER BY f.thousands + g.tthousands ASC) AS upper_bound
+FROM (
+SELECT 0 AS thousands
+UNION ALL SELECT 5000
+) AS f
+CROSS JOIN (
+SELECT 0 AS tthousands
+UNION ALL SELECT 10000
+UNION ALL SELECT 20000
+UNION ALL SELECT 30000
+UNION ALL SELECT 40000
+UNION ALL SELECT 50000
+UNION ALL SELECT 60000
+UNION ALL SELECT 70000
+UNION ALL SELECT 80000
+UNION ALL SELECT 90000
+) AS g
+ORDER BY f.thousands + g.tthousands ASC),
+group_tab AS (
+SELECT lower_bound, upper_bound - 0.01 AS upper_bound, CONCAT('[€', FORMAT(lower_bound, 0), ', €', FORMAT(upper_bound, 0), ')') AS category
+FROM pre_tab
+WHERE upper_bound <= 75000),
+sale_tab AS (
+SELECT customer_id, SUM(total_price_eur) AS revenue
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
+GROUP BY customer_id),
+comb_tab AS (
+SELECT st.customer_id, st.revenue, gt.category, gt.lower_bound AS lower_bound
+FROM sale_tab AS st
+INNER JOIN group_tab AS gt ON st.revenue BETWEEN gt.lower_bound AND gt.upper_bound),
+pre_final AS (
+SELECT category, COUNT(*) AS cust_count, lower_bound
+FROM comb_tab
+GROUP BY category, lower_bound)
+SELECT category, FORMAT(cust_count, 0), CONCAT(FORMAT(100 * cust_count / (SUM(cust_count) OVER ()), 2), '%') AS rel
+FROM pre_final
+ORDER BY lower_bound;
+```
+
+```{r tab8, echo = FALSE}
+x <- knitr::kable(sql_q8,
+             col.names = c("Revenue interval", "Customer count", "Relative"), align = c("l", "r", "r"), caption = "Active customer counts in 2025 by revenue in 2025.", format = "pipe")
+x
+```
+
+The distribution of revenue in 2025 by revenue interval is displayed in Table \@ref(tab:tab8). Therein, only active customers in 2025 were considered. The **distribution** is **highly skewed**. Almost **50%** of active customers contribute in a smaller revenue range **between €0.00 and €4,999.99**. About **75%** of customers spend between **€0.00 and €9,999.99**. Only **0.08%** of customers spend at least **€50,000.00**.
+
+### What does customer purchasing frequency look like?
+
+
+```{sql connection = con, output.var = "sql_q9", warning = FALSE, echo = FALSE}
+WITH time_tab AS (
+SELECT customer_id, sale_timestamp, TIMESTAMPDIFF(SECOND, LAG(sale_timestamp, 1) OVER (PARTITION BY customer_id ORDER BY sale_timestamp ASC), sale_timestamp) / 86400.0 AS days_since_last_purch
+FROM sales
+ORDER BY customer_id, sale_timestamp),
+freq_tab AS (
+SELECT customer_id, days_since_last_purch
+FROM time_tab
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025),
+pre_group AS (
+SELECT hund_tab.hundreds + thous_tab.thousands AS lower_bound, 
+	LEAD(hund_tab.hundreds + thous_tab.thousands, 1) OVER (ORDER BY hund_tab.hundreds + thous_tab.thousands) AS upper_bound
+FROM (
+SELECT 0 AS hundreds
+UNION ALL SELECT 100
+UNION ALL SELECT 200
+UNION ALL SELECT 300
+UNION ALL SELECT 400
+UNION ALL SELECT 500
+UNION ALL SELECT 600
+UNION ALL SELECT 700
+UNION ALL SELECT 800
+UNION ALL SELECT 900
+) AS hund_tab
+CROSS JOIN (
+SELECT 0 AS thousands
+UNION ALL SELECT 1000
+) AS thous_tab
+ORDER BY  hund_tab.hundreds + thous_tab.thousands ASC),
+group_tab AS (
+SELECT lower_bound, upper_bound - 1 AS upper_bound, CONCAT('between ', lower_bound, ' and ', upper_bound - 1) AS category
+FROM pre_group
+WHERE upper_bound <= 1400),
+count_tab AS (
+SELECT gt.category, gt.lower_bound
+FROM freq_tab AS ft
+INNER JOIN group_tab AS gt ON ft.days_since_last_purch BETWEEN gt.lower_bound AND gt.upper_bound),
+pre_final AS (
+SELECT category, COUNT(*) AS order_count, lower_bound
+FROM count_tab
+GROUP BY category, lower_bound
+ORDER BY lower_bound)
+SELECT category, FORMAT(order_count, 0) AS abs, CONCAT(FORMAT(100 * order_count / SUM(order_count) OVER (), 2), '%') AS rel
+FROM pre_final;
+```
+
+```{r tab9, echo = FALSE}
+x <- knitr::kable(sql_q9,
+             col.names = c("Days since last purchase", "Order count", "Relative"), align = c("l", "r", "r"), caption = "Order counts in 2025 by days since last purchase.", format = "pipe")
+x[[4]] <- "|:---------------------------------------------------------|-------------------------:|-----------------------:|"
+x
+```
+
+In 2025, **61.87%** of orders were done **within 99 days** of the previous purchase, **83.2%** **within 199 days**. About **3.62%** of orders took place more than a year after their previous orders. **37** customers waited **at least 1,000 days** before they did another purchase in 2025. Overall, the purchase frequency is heavily skewed.
+
+### Are there high-value customer segments?
+
+### Are customers becoming more or less valuable?
+
+
