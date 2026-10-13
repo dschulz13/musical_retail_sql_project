@@ -1010,16 +1010,18 @@ Figure \@ref(fig:fig-clust-private) shows three K-Means clusters for private cus
 A tentative interpretation of the clusters is that one group has lower-to-moderate order activity and spending, another has higher activity but lower-to-moderate spending per order, and a third has lower-to-moderate activity but higher spending per order. Members of the second and third cluster can be considered to be more valuable than those of the first cluster.
 
 ```{python fig-clust-private-detail, echo = FALSE, eval = TRUE, fig.cap = "Centroids of private customer clusters scaled between 0 and 1."}
-cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
 
 import numpy as np
+cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
 
-cluster_centers_sc = cluster_centers.copy()
+cluster_centers_rescaled = scaler.inverse_transform(cluster_centers)
+
+cluster_centers_sc = cluster_centers_rescaled.copy()
 
 for i in range(0, 6):
-  minv = data_scaled[:, i].min()
-  maxv = data_scaled[:, i].max()
-  cluster_centers_sc[:, i] = (cluster_centers[:, i] - minv) / (maxv - minv)
+  minv = X[:, i].min()
+  maxv = X[:, i].max()
+  cluster_centers_sc[:, i] = (cluster_centers_rescaled[:, i] - minv) / (maxv - minv)
 
 import matplotlib.colors as mcolors
 cmap = plt.colormaps['viridis']
@@ -1097,13 +1099,16 @@ A more-in-depth analysis of the clusters of private and business customers is, h
 cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
 
 import numpy as np
+cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
 
-cluster_centers_sc = cluster_centers.copy()
+cluster_centers_rescaled = scaler.inverse_transform(cluster_centers)
+
+cluster_centers_sc = cluster_centers_rescaled.copy()
 
 for i in range(0, 6):
-  minv = data_scaled[:, i].min()
-  maxv = data_scaled[:, i].max()
-  cluster_centers_sc[:, i] = (cluster_centers[:, i] - minv) / (maxv - minv)
+  minv = X[:, i].min()
+  maxv = X[:, i].max()
+  cluster_centers_sc[:, i] = (cluster_centers_rescaled[:, i] - minv) / (maxv - minv)
 
 import matplotlib.colors as mcolors
 cmap = plt.colormaps['viridis']
