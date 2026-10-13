@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   echo = FALSE,
   fig.align = 'center',
-  purl = FALSE
+  purl = FALSE,
+  warning = FALSE
 )
 
 library(RMySQL)
@@ -49,6 +50,14 @@ remove_format <- function(x) {
   ))
 }
 
+sql_chunk_activator <- function(export_type) {
+    if (export_type == "sql") {
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
+}
+export_type <- "sql"
 ```
 
 
@@ -1000,6 +1009,40 @@ Figure \@ref(fig:fig-clust-private) shows three K-Means clusters for private cus
 
 A tentative interpretation of the clusters is that one group has lower-to-moderate order activity and spending, another has higher activity but lower-to-moderate spending per order, and a third has lower-to-moderate activity but higher spending per order. Members of the second and third cluster can be considered to be more valuable than those of the first cluster.
 
+```{python fig-clust-private-detail, echo = FALSE, eval = TRUE, fig.cap = "Centroids of private customer clusters scaled between 0 and 1."}
+cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
+
+import numpy as np
+
+cluster_centers_sc = cluster_centers.copy()
+
+for i in range(0, 6):
+  minv = data_scaled[:, i].min()
+  maxv = data_scaled[:, i].max()
+  cluster_centers_sc[:, i] = (cluster_centers[:, i] - minv) / (maxv - minv)
+
+import matplotlib.colors as mcolors
+cmap = plt.colormaps['viridis']
+norm = mcolors.Normalize(vmin = 0, vmax = 2)
+color_0 = cmap(norm(0))
+color_1 = cmap(norm(1))
+color_2 = cmap(norm(2))
+
+x = np.arange(1, 7, 1)
+fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+ax.plot(x, cluster_centers_sc[0, :], color = color_0);
+ax.scatter(x, cluster_centers_sc[0, :], color = color_0);
+ax.plot(x, cluster_centers_sc[1, :], color = color_1);
+ax.scatter(x, cluster_centers_sc[1, :], color = color_1);
+ax.plot(x, cluster_centers_sc[2, :], color = color_2);
+ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
+ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
+ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value")
+ax.set_title('Detailed centroid comparison')
+```
+
+
+
 ```{python fig-clust-business, echo = FALSE, eval = TRUE, fig.cap = "K-Means clusters for business customers projected onto the first two principal components."}
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SC
@@ -1049,6 +1092,38 @@ ax.set_title('Business customer segments')
 Figure \@ref(fig:fig-clust-business) applies the same method to business customers. In the two-dimensional projection, the clusters appear to separate more clearly along the customer activity component than the average spending component. This suggests that the cluster with high-activity customers is most valuable among the three clusters.
 
 A more-in-depth analysis of the clusters of private and business customers is, however, required to make definitive statements about customer segment value.
+
+```{python fig-clust-business-detail, echo = FALSE, eval = TRUE, fig.cap = "Centroids of business customer clusters scaled between 0 and 1."}
+cluster_centers = clust_fit.named_steps['kmeans'].cluster_centers_
+
+import numpy as np
+
+cluster_centers_sc = cluster_centers.copy()
+
+for i in range(0, 6):
+  minv = data_scaled[:, i].min()
+  maxv = data_scaled[:, i].max()
+  cluster_centers_sc[:, i] = (cluster_centers[:, i] - minv) / (maxv - minv)
+
+import matplotlib.colors as mcolors
+cmap = plt.colormaps['viridis']
+norm = mcolors.Normalize(vmin = 0, vmax = 2)
+color_0 = cmap(norm(0))
+color_1 = cmap(norm(1))
+color_2 = cmap(norm(2))
+
+x = np.arange(1, 7, 1)
+fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+ax.plot(x, cluster_centers_sc[0, :], color = color_0);
+ax.scatter(x, cluster_centers_sc[0, :], color = color_0);
+ax.plot(x, cluster_centers_sc[1, :], color = color_1);
+ax.scatter(x, cluster_centers_sc[1, :], color = color_1);
+ax.plot(x, cluster_centers_sc[2, :], color = color_2);
+ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
+ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
+ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value")
+ax.set_title('Detailed centroid comparison')
+```
 
 ### Are customers becoming more or less valuable?
 

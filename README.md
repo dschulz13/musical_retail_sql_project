@@ -1,7 +1,7 @@
 Music Retailer Sales SQL Project
 ================
 Dominik Schulz,
-October 10, 2026
+October 13, 2026
 
 - [1 Executive summary](#1-executive-summary)
 - [2 Company & data information](#2-company--data-information)
@@ -50,6 +50,7 @@ The available data is structured as displayed in Figure
 
 <img src="structure_musical_retail_germany.png" alt="An overview of the structure of the musical_retail_germany SQL database." width="80%" height="80%" />
 <p class="caption">
+
 <span id="fig:fig-struct"></span>Figure 2.1: An overview of the
 structure of the musical_retail_germany SQL database.
 </p>
@@ -508,6 +509,7 @@ exhaustive.
 
 <img src="README_files/figure-gfm/fig-dist-rev-1.png" alt="Histogram and kernel density of customer-level revenue in 2025." width="960" />
 <p class="caption">
+
 <span id="fig:fig-dist-rev"></span>Figure 5.1: Histogram and kernel
 density of customer-level revenue in 2025.
 </p>
@@ -618,6 +620,7 @@ engagement and spending features.
 
 <img src="README_files/figure-gfm/fig-clust-private-1.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
 <p class="caption">
+
 <span id="fig:fig-clust-private"></span>Figure 5.2: K-Means clusters for
 private customers projected onto the first two principal components.
 </p>
@@ -644,16 +647,28 @@ those of the first cluster.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-3.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-detail-3.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
-<span id="fig:fig-clust-business"></span>Figure 5.3: K-Means clusters
+
+<span id="fig:fig-clust-private-detail"></span>Figure 5.3: Centroids of
+private customer clusters scaled between 0 and 1.
+</p>
+
+</div>
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/fig-clust-business-5.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<p class="caption">
+
+<span id="fig:fig-clust-business"></span>Figure 5.4: K-Means clusters
 for business customers projected onto the first two principal
 components.
 </p>
 
 </div>
 
-Figure <a href="#fig:fig-clust-business">5.3</a> applies the same method
+Figure <a href="#fig:fig-clust-business">5.4</a> applies the same method
 to business customers. In the two-dimensional projection, the clusters
 appear to separate more clearly along the customer activity component
 than the average spending component. This suggests that the cluster with
@@ -662,6 +677,17 @@ high-activity customers is most valuable among the three clusters.
 A more-in-depth analysis of the clusters of private and business
 customers is, however, required to make definitive statements about
 customer segment value.
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/fig-clust-business-detail-7.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
+<p class="caption">
+
+<span id="fig:fig-clust-business-detail"></span>Figure 5.5: Centroids of
+business customer clusters scaled between 0 and 1.
+</p>
+
+</div>
 
 ### 5.2.5 Are customers becoming more or less valuable?
 
