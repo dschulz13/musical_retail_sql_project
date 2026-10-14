@@ -680,9 +680,9 @@ Customer acquisition is valuable, but sustained growth also depends on retention
 4. Return absolute counts and relative shares as two rows.
 
 
-**Results**
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q7", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q7", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Number of new and returning customers in 2025 (Table 5.9)
 WITH agg_tab AS (
 SELECT customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY sale_timestamp ASC) AS nr_purchase, EXTRACT(YEAR FROM sale_timestamp) AS sale_year
@@ -718,6 +718,10 @@ UNION ALL
 FROM abs_tab);
 ```
 
+`r end_code()`
+
+**Results**
+
 ```{r tab7, echo = FALSE}
 rownames(sql_q7) <- c("Absolute", "Relative")
 x <- knitr::kable(sql_q7,
@@ -738,9 +742,9 @@ Table \@ref(tab:tab7) shows **`r sql_q7$Total[[1]]` active customers** in 2025, 
 4. Calculate each interval’s share of the customers included in the grouped results and order the intervals from low to high.
 
 
-**Results:**
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q8", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q8", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Revenue concentration among active customers in 2025 (Table 5.10)
 WITH pre_tab AS (
 SELECT f.thousands + g.tthousands AS lower_bound, LEAD(f.thousands + g.tthousands) OVER (ORDER BY f.thousands + g.tthousands ASC) AS upper_bound
@@ -782,6 +786,10 @@ SELECT category, FORMAT(cust_count, 0), CONCAT(FORMAT(100 * cust_count / (SUM(cu
 FROM pre_final
 ORDER BY lower_bound;
 ```
+
+`r end_code()`
+
+**Results:**
 
 ```{r tab8, echo = FALSE}
 x <- knitr::kable(sql_q8,
@@ -836,9 +844,9 @@ Figure \@ref(fig:fig-dist-rev), created in Python, combines a histogram of custo
 4. Count intervals in each bin and calculate their percentage of all intervals included in the bins.
 
 
-**Results**
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q9", warning = FALSE, echo = FALSE, , purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q9", warning = FALSE, echo = TRUE, , purl = sql_chunk_activator(export_type)}
 # Number of orders in 2025 by days since the previous purchase (Table 5.11)
 WITH time_tab AS (
 SELECT customer_id, sale_timestamp, TIMESTAMPDIFF(SECOND, LAG(sale_timestamp, 1) OVER (PARTITION BY customer_id ORDER BY sale_timestamp ASC), sale_timestamp) / 86400.0 AS days_since_last_purch
@@ -885,6 +893,11 @@ SELECT category, FORMAT(order_count, 0) AS abs, CONCAT(FORMAT(100 * order_count 
 FROM pre_final;
 ```
 
+`r end_code()`
+
+**Results**
+
+
 ```{r tab9, echo = FALSE}
 x <- knitr::kable(sql_q9,
              col.names = c("Days since last purchase", "Order count", "Relative"), align = c("l", "r", "r"), caption = "Order counts in 2025 by days since last purchase.", format = "pipe")
@@ -905,9 +918,9 @@ Among the order intervals assigned to the reported bins, **61.83%** fell within 
 4. Join those features to the cleaned customer type, calculate revenue shares and average revenue per order, then return the 20 highest-revenue customers.
 
 
-**Results**
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q10", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q10", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Key features of top 20 customers by revenue in 2025 (Table 5.12)
 WITH rev_tab AS (
 SELECT customer_id, SUM(total_price_eur) AS revenue
@@ -962,6 +975,11 @@ INNER JOIN cat_final AS ct ON rt.customer_id = ct.customer_id
 ORDER BY rt.revenue DESC
 LIMIT 20;
 ```
+
+`r end_code()`
+
+**Results**
+
 
 ```{r tab10, echo = FALSE}
 x <- knitr::kable(sql_q10,
@@ -1207,9 +1225,9 @@ ax.set_title('Detailed centroid comparison')
 4. Average those customer-level changes to produce the two summary measures.
 
 
-**Results**
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q11", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q11", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Average customer-level revenue change between 2024 and 2025 among
 # customers doing a purchase in both years (Table 5.13)
 WITH agg_tab AS (
@@ -1227,6 +1245,11 @@ WHERE sale_year = 2025 AND revenue2024 IS NOT NULL)
 SELECT CONCAT('€', FORMAT(AVG(revenue_shift), 2)) AS mean_abs_change, CONCAT(FORMAT(AVG(revenue_change_rel), 2), '%') AS mean_rel_change
 FROM change_tab;
 ```
+
+`r end_code()`
+
+**Results**
+
 
 ```{r tab11, echo = FALSE}
 x <- knitr::kable(sql_q11,
@@ -1247,26 +1270,9 @@ Table \@ref(tab:tab11) shows that customers who purchased in both 2024 and 2025 
 3. Rank products by revenue within each year using `DENSE_RANK()`.
 4. Return ranks up to 10 for each year, sorted by year and rank.
 
+`r start_code()`
 
-**SQL approach for Table \@ref(tab:tab13)**
-
-1. Join sales to sale items and cleaned product metadata, extracting the sale year and line-item revenue.
-2. Sum line-item revenue by year and product category.
-3. Rank categories by revenue within each year using `DENSE_RANK()`.
-4. Return categories with a rank up to 10 for each year, sorted by year and rank.
-
-
-**SQL approach for Table \@ref(tab:tab14)**
-
-1. Join sales to sale items and cleaned product metadata, extracting the sale year and line-item revenue.
-2. Sum line-item revenue by year and brand.
-3. Rank brands by revenue within each year using `DENSE_RANK()`.
-4. Return brands with a rank up to 10 for each year, sorted by year and rank.
-
-
-**Results**
-
-```{sql connection = con, output.var = "sql_q12", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q12", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Top 10 products by revenue for years 2022 through 2025 (Table 5.14)
 WITH join_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, si.product_id, si.units_sold, si.line_total_eur AS revenue,
@@ -1287,15 +1293,19 @@ WHERE ranking <= 10
 ORDER BY sale_year DESC, ranking ASC;
 ```
 
-```{r tab12, echo = FALSE}
-x <- knitr::kable(sql_q12,
-             col.names = c("Year", "Sales ranking", "Product name", "Total revenue"), align = c("r", "r", "l", "r"), caption = "Top 10 products by revenue for 2022–2025.", format = "pipe")
-x
-```
+`r end_code()`
+
+**SQL approach for Table \@ref(tab:tab13)**
+
+1. Join sales to sale items and cleaned product metadata, extracting the sale year and line-item revenue.
+2. Sum line-item revenue by year and product category.
+3. Rank categories by revenue within each year using `DENSE_RANK()`.
+4. Return categories with a rank up to 10 for each year, sorted by year and rank.
 
 
+`r start_code()`
 
-```{sql connection = con, output.var = "sql_q12_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q12_2", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Product categories ranked by revenue for 2022 through 2025 (Table 5.15)
 WITH join_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, si.product_id, si.units_sold, si.line_total_eur AS revenue,
@@ -1316,14 +1326,19 @@ WHERE ranking <= 10
 ORDER BY sale_year DESC, ranking ASC;
 ```
 
-```{r tab13, echo = FALSE}
-x <- knitr::kable(sql_q12_2,
-             col.names = c("Year", "Sales ranking", "Product category", "Total revenue"), align = c("r", "r", "l", "r"), caption = "Product categories ranked by revenue for 2022–2025.", format = "pipe")
-x
-```
+`r end_code()`
+
+**SQL approach for Table \@ref(tab:tab14)**
+
+1. Join sales to sale items and cleaned product metadata, extracting the sale year and line-item revenue.
+2. Sum line-item revenue by year and brand.
+3. Rank brands by revenue within each year using `DENSE_RANK()`.
+4. Return brands with a rank up to 10 for each year, sorted by year and rank.
 
 
-```{sql connection = con, output.var = "sql_q12_3", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q12_3", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Top 10 brands by revenue for 2022 through 2025 (Table 5.16)
 WITH join_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, si.product_id, si.units_sold, si.line_total_eur AS revenue,
@@ -1343,6 +1358,26 @@ FROM rank_tab
 WHERE ranking <= 10
 ORDER BY sale_year DESC, ranking ASC;
 ```
+
+`r end_code()`
+
+**Results**
+
+
+```{r tab12, echo = FALSE}
+x <- knitr::kable(sql_q12,
+             col.names = c("Year", "Sales ranking", "Product name", "Total revenue"), align = c("r", "r", "l", "r"), caption = "Top 10 products by revenue for 2022–2025.", format = "pipe")
+x
+```
+
+
+
+```{r tab13, echo = FALSE}
+x <- knitr::kable(sql_q12_2,
+             col.names = c("Year", "Sales ranking", "Product category", "Total revenue"), align = c("r", "r", "l", "r"), caption = "Product categories ranked by revenue for 2022–2025.", format = "pipe")
+x
+```
+
 
 ```{r tab14, echo = FALSE}
 x <- knitr::kable(sql_q12_3,
