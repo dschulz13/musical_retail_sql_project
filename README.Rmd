@@ -65,6 +65,8 @@ export_type <- "sql"
 
 # Executive summary
 
+<style>p {text-align: justify;}</style>
+
 1. Revenue has grown, but customers are placing fewer orders per active customer over time. The 2024–2025 decomposition below identifies higher order volume as the largest arithmetic contributor to the increase in gross order value. Customer acquisition remains important, but acquisition should be complemented by retention and reactivation efforts. Targeted offers or a loyalty scheme could be tested with a holdout group, with success measured by incremental repeat orders and contribution margin rather than discount redemptions alone.
 
 # Company & data information
@@ -146,11 +148,11 @@ This section presents the results available so far, with tables, figures, and co
 
 **SQL approach for total 2025 figure**
 
-1. Filter `sales` to transactions recorded in 2025.
-2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees.
+<!-- 1. Filter `sales` to transactions recorded in 2025. -->
+<!-- 2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees. -->
 
 
-<details><summary>Code</summary><p>
+<details><summary>Show code</summary>
 
 ```{sql connection = con, output.var = "sql_q1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2025
@@ -159,7 +161,7 @@ FROM SALES
 WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 ```
 
-</p></details><br>
+</details><br>
 
 ```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2024

@@ -22,6 +22,8 @@ yet finished. It will be updated regularly.
 
 # 1 Executive summary
 
+<style>p {text-align: justify;}</style>
+
 1.  Revenue has grown, but customers are placing fewer orders per active
     customer over time. The 2024–2025 decomposition below identifies
     higher order volume as the largest arithmetic contributor to the
@@ -141,18 +143,15 @@ topic and business question.
 
 **SQL approach for total 2025 figure**
 
-1.  Filter `sales` to transactions recorded in 2025.
-2.  Sum `total_price_eur - shipping_fee_eur` to calculate sales after
-    subtracting shipping fees.
+<!-- 1. Filter `sales` to transactions recorded in 2025. -->
+
+<!-- 2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees. -->
 
 <details>
 
 <summary>
-
-Code
+Show code
 </summary>
-
-<p>
 
 ``` sql
 # Total sales in year 2025
@@ -160,8 +159,6 @@ SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2025
 FROM SALES
 WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 ```
-
-</p>
 
 </details>
 
