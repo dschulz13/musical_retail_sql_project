@@ -1,5 +1,6 @@
 rmarkdown::render("README.Rmd", output_file = "README.md", quiet = FALSE)
 source("Adjust code toggle in md.R")
+#source("Adjust justification.R")
 html <- markdown::markdownToHTML(
   "README.md",
   fragment.only = FALSE

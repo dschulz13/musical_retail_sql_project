@@ -15,14 +15,17 @@ October 14, 2026
   - [5.5 Inventory health](#55-inventory-health)
   - [5.6 Supplier health](#56-supplier-health)
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<style>
+  p {
+    text-align: justify;
+    hyphens: auto;
+  }
+</style>
 
 **Note:** This entire project is currently a work in progress and not
 yet finished. It will be updated regularly.
 
 # 1 Executive summary
-
-<style>p {text-align: justify;}</style>
 
 1.  Revenue has grown, but customers are placing fewer orders per active
     customer over time. The 2024–2025 decomposition below identifies

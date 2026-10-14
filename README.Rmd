@@ -8,7 +8,12 @@ output:
     toc_depth: 2
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<style>
+  p {
+    text-align: justify;
+    hyphens: auto;
+  }
+</style>
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -72,7 +77,6 @@ end_code <- function() {
 
 # Executive summary
 
-<style>p {text-align: justify;}</style>
 
 1. Revenue has grown, but customers are placing fewer orders per active customer over time. The 2024–2025 decomposition below identifies higher order volume as the largest arithmetic contributor to the increase in gross order value. Customer acquisition remains important, but acquisition should be complemented by retention and reactivation efforts. Targeted offers or a loyalty scheme could be tested with a holdout group, with success measured by incremental repeat orders and contribution margin rather than discount redemptions alone.
 
