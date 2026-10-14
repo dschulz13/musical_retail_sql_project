@@ -15,13 +15,6 @@ October 14, 2026
   - [5.5 Inventory health](#55-inventory-health)
   - [5.6 Supplier health](#56-supplier-health)
 
-<style>
-  p {
-    text-align: justify;
-    hyphens: auto;
-  }
-</style>
-
 **Note:** This entire project is currently a work in progress and not
 yet finished. It will be updated regularly.
 

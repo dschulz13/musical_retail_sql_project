@@ -6,14 +6,8 @@ output:
   bookdown::github_document2:
     toc: true
     toc_depth: 2
+    css: style.css
 ---
-
-<style>
-  p {
-    text-align: justify;
-    hyphens: auto;
-  }
-</style>
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
