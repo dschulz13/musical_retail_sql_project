@@ -143,9 +143,9 @@ topic and business question.
 
 **SQL approach for total 2025 figure**
 
-<!-- 1. Filter `sales` to transactions recorded in 2025. -->
-
-<!-- 2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees. -->
+1.  Filter `sales` to transactions recorded in 2025.
+2.  Sum `total_price_eur - shipping_fee_eur` to calculate sales after
+    subtracting shipping fees.
 
 <details>
 
@@ -162,8 +162,6 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 
 </details>
 
-<br>
-
 **SQL approach for absolute figures in Table
 <a href="#tab:sales-monthly-tab">5.1</a>**
 
@@ -171,6 +169,14 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 2.  Group by month and sum sales after subtracting shipping fees.
 3.  Pivot the 12 monthly totals into one row with conditional
     aggregation (`MAX(CASE WHEN ...)`).
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **SQL approach for relative figures in Table
 <a href="#tab:sales-monthly-tab">5.1</a>**
@@ -181,6 +187,14 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 3.  Calculate each month’s share of annual sales and format it as a
     percentage.
 4.  Pivot the monthly percentages into one row for presentation.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **Results**
 
@@ -209,6 +223,14 @@ sales, indicating a pronounced fourth-quarter peak.
 2.  Sum `total_price_eur - shipping_fee_eur` to calculate the comparable
     net-of-shipping sales total for 2024.
 
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
+
 **SQL approach for Table <a href="#tab:sales-monthly-comp">5.2</a>**
 
 1.  Filter transactions to 2024 and 2025, then aggregate net-of-shipping
@@ -219,6 +241,14 @@ sales, indicating a pronounced fourth-quarter peak.
     year-over-year changes.
 4.  Format the monetary values and percentage changes for the comparison
     table.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **Results**
 
@@ -261,6 +291,14 @@ October, November, and December.
 3.  For the 2025 row, calculate relative changes for 2022–2023,
     2023–2024, and 2024–2025.
 4.  Return the monthly comparison in calendar order.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **Results**
 
@@ -306,11 +344,27 @@ net-of-shipping basis as the sales totals in Sections 6.1.1–6.1.2.
     registered-customer total at each year-end.
 4.  Pivot the cumulative totals into one row, with one column per year.
 
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
+
 **SQL approach for Table <a href="#tab:act-cust-tab">5.5</a>**
 
 1.  Extract the sale year and customer ID from each sale.
 2.  Count distinct customers with at least one sale in each year.
 3.  Pivot those yearly counts into one row for 2022–2025.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **Results**
 
@@ -347,6 +401,14 @@ from **87.63%** to **90.39%**, and was **88.03%** in 2025.
 2.  Pivot the four annual averages into one row and format them as euro
     amounts.
 
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
+
 **Results**
 
 |      2022 |      2023 |      2024 |      2025 |
@@ -374,6 +436,14 @@ it does not subtract shipping fees.
 4.  Combine the order-count and order-frequency rows, then pivot the
     annual values into columns.
 
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
+
 **SQL approach for Table <a href="#tab:tab62">5.8</a>**
 
 1.  Select 2025 sales and join them to customer records, grouping
@@ -384,6 +454,14 @@ it does not subtract shipping fees.
     group.
 4.  Join the summaries and calculate orders per active customer; format
     the monetary and count fields for the table.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+</details>
 
 **Results**
 

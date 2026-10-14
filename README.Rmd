@@ -58,6 +58,13 @@ sql_chunk_activator <- function(export_type) {
     }
 }
 export_type <- "sql"
+
+start_code <- function() {
+  knitr::asis_output("<details><summary>Show code</summary>")
+}
+end_code <- function() {
+  knitr::asis_output("</details>")
+}
 ```
 
 
@@ -148,11 +155,11 @@ This section presents the results available so far, with tables, figures, and co
 
 **SQL approach for total 2025 figure**
 
-<!-- 1. Filter `sales` to transactions recorded in 2025. -->
-<!-- 2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees. -->
+1. Filter `sales` to transactions recorded in 2025.
+2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees.
 
 
-<details><summary>Show code</summary>
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2025
@@ -161,7 +168,7 @@ FROM SALES
 WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 ```
 
-</details><br>
+`r end_code()`
 
 ```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2024
@@ -192,6 +199,9 @@ inc_dec <- if (sales_change < 0) {
 2. Group by month and sum sales after subtracting shipping fees.
 3. Pivot the 12 monthly totals into one row with conditional aggregation (`MAX(CASE WHEN ...)`).
 
+
+`r start_code()`
+
 ```{sql connection = con, output.var = "sql_q1_monthly1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total sales by month in year 2025 (Table 5.1, Row 1)
 WITH sales_long_tab AS (
@@ -215,6 +225,9 @@ SELECT
 FROM sales_long_tab;
 ```
 
+`r end_code()`
+
+
 ```{r, echo = FALSE}
 sql_q1_monthly1 <- purrr::map_df(sql_q1_monthly1, function(.x) {
   money_format(.x)
@@ -227,6 +240,9 @@ sql_q1_monthly1 <- purrr::map_df(sql_q1_monthly1, function(.x) {
 2. Use the sum of all monthly totals as the annual denominator.
 3. Calculate each month’s share of annual sales and format it as a percentage.
 4. Pivot the monthly percentages into one row for presentation.
+
+
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q1_monthly2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total sales by month in year 2025 (Table 5.1, Row 2)
@@ -251,6 +267,8 @@ SELECT
 FROM sales_long_tab;
 ```
 
+`r end_code()`
+
 **Results**
 
 The **net sales total** for 2025, defined here as `total_price_eur` minus shipping fees, is **`r money_format(sql_q1)`**.
@@ -271,6 +289,18 @@ kable(tab_q1_monthly, caption = "Monthly total sales (absolute and relative) of 
 1. Filter `sales` to transactions recorded in 2024.
 2. Sum `total_price_eur - shipping_fee_eur` to calculate the comparable net-of-shipping sales total for 2024.
 
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+# Total sales in year 2024
+SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2024
+FROM SALES
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
+```
+
+`r end_code()`
+
 **SQL approach for Table \@ref(tab:sales-monthly-comp)**
 
 1. Filter transactions to 2024 and 2025, then aggregate net-of-shipping sales by year and month.
@@ -278,10 +308,8 @@ kable(tab_q1_monthly, caption = "Monthly total sales (absolute and relative) of 
 3. Keep the 2025 rows and calculate absolute and relative year-over-year changes.
 4. Format the monetary values and percentage changes for the comparison table.
 
-**Results**
 
-Net sales totaled **`r money_format(sql_q1)`** in 2025, an **`r inc_dec`** of **`r money_format(abs_change)`** (**`r rel_change`%**) compared with 2024, when net sales were **`r money_format(sql_q1_2)`**.
-
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q2_monthly", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Monthly sales comparison between 2024 and 2025 (Table 5.2)
@@ -304,6 +332,13 @@ SELECT month_name, CONCAT('€', FORMAT(total_sales_2024, 2)) AS total_sales_202
 FROM comp_tab;
 ```
 
+`r end_code()`
+
+**Results**
+
+Net sales totaled **`r money_format(sql_q1)`** in 2025, an **`r inc_dec`** of **`r money_format(abs_change)`** (**`r rel_change`%**) compared with 2024, when net sales were **`r money_format(sql_q1_2)`**.
+
+
 ```{r sales-monthly-comp, echo = FALSE}
 x <- knitr::kable(sql_q2_monthly,
              col.names = c("Month", "Sales 2024", "Sales 2025", "Absolute change", "Relative change"), align = c("l", "r", "r", "r", "r"), caption = "Monthly sales comparison between the years 2024 and 2025.", format = "pipe")
@@ -321,6 +356,9 @@ As Table \@ref(tab:sales-monthly-comp) shows, net sales increased in every month
 2. Use windowed `LAG()` values to retrieve the same month’s revenue from the previous three years.
 3. For the 2025 row, calculate relative changes for 2022–2023, 2023–2024, and 2024–2025.
 4. Return the monthly comparison in calendar order.
+
+
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q3", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total revenue increase in % by month for each year (Table 5.3)
@@ -341,6 +379,8 @@ FROM lag_tab
 WHERE year_numb = 2025
 ORDER BY month_numb;
 ```
+
+`r end_code()`
 
 **Results**
 
@@ -363,13 +403,8 @@ The largest acceleration was in March, when the growth rate rose from 5.01% to 1
 3. Calculate a cumulative sum across the buckets to obtain the registered-customer total at each year-end.
 4. Pivot the cumulative totals into one row, with one column per year.
 
-**SQL approach for Table \@ref(tab:act-cust-tab)**
 
-1. Extract the sale year and customer ID from each sale.
-2. Count distinct customers with at least one sale in each year.
-3. Pivot those yearly counts into one row for 2022–2025.
-
-**Results**
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q4_1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Cumulative registered customers by year (Table 5.4)
@@ -397,18 +432,16 @@ SELECT
 FROM sum_tab;
 ```
 
-```{r reg-cust-tab, echo = FALSE}
-knitr::kable(
-  sql_q4_1,
-  col.names = c("2022", "2023", "2024", "2025"),
-  format = "pipe",
-  align = "rrrr",
-  caption = "Cumulative number of registered customers by year."
-)
-```
+`r end_code()`
 
-Table \@ref(tab:reg-cust-tab) shows that the registered-customer base nearly doubled from 2022 to 2025. By the end of 2025, the platform had **`r as.character(sql_q4_1[["year_2025"]])` registered customers**.
+**SQL approach for Table \@ref(tab:act-cust-tab)**
 
+1. Extract the sale year and customer ID from each sale.
+2. Count distinct customers with at least one sale in each year.
+3. Pivot those yearly counts into one row for 2022–2025.
+
+
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q4_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Active customers by year (Table 5.5)
@@ -425,6 +458,23 @@ SELECT
     FORMAT(MAX(CASE WHEN year_numb = 2025 THEN numb_active_cust END), 0) AS year_2025
 FROM agg_tab;
 ```
+
+`r end_code()`
+
+**Results**
+
+```{r reg-cust-tab, echo = FALSE}
+knitr::kable(
+  sql_q4_1,
+  col.names = c("2022", "2023", "2024", "2025"),
+  format = "pipe",
+  align = "rrrr",
+  caption = "Cumulative number of registered customers by year."
+)
+```
+
+Table \@ref(tab:reg-cust-tab) shows that the registered-customer base nearly doubled from 2022 to 2025. By the end of 2025, the platform had **`r as.character(sql_q4_1[["year_2025"]])` registered customers**.
+
 
 ```{r act-cust-tab, echo = FALSE}
 knitr::kable(
@@ -453,7 +503,8 @@ Table \@ref(tab:act-cust-tab) shows the number of **active customers**, defined 
 1. Group sales by calendar year and calculate the average `total_price_eur` per order.
 2. Pivot the four annual averages into one row and format them as euro amounts.
 
-**Results**
+
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q5", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Average order value by year (Table 5.6)
@@ -468,6 +519,10 @@ SELECT
     CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2025 THEN average_order_eur END), 2)) AS year_2025
 FROM agg_tab;
 ```
+
+`r end_code()`
+
+**Results**
 
 ```{r tab-average-order, echo = FALSE}
 x <- knitr::kable(sql_q5,
@@ -488,15 +543,7 @@ According to Table \@ref(tab:tab-average-order), average order value fell slight
 4. Combine the order-count and order-frequency rows, then pivot the annual values into columns.
 
 
-**SQL approach for Table \@ref(tab:tab62)**
-
-1. Select 2025 sales and join them to customer records, grouping customers by whether they registered before 2025 or during 2025.
-2. For each registration group, calculate order count, total `total_price_eur`, and average order value.
-3. Separately count distinct active customers in each registration group.
-4. Join the summaries and calculate orders per active customer; format the monetary and count fields for the table.
-
-
-**Results**
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q6_1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Yearly order counts and average orders by active customer (Table 5.7)
@@ -529,27 +576,17 @@ SELECT
 FROM agg_tab2);
 ```
 
-```{r tab-num-order, echo = FALSE}
-rownames(sql_q6_1) <- c("Number of orders", "Orders per capita")
-x <- knitr::kable(sql_q6_1,
-             col.names = c("2022", "2023", "2024", "2025"), align = c("r", "r", "r", "r"), caption = "Yearly order counts and average orders per active customer.", format = "pipe", row.names = TRUE)
-x
-```
+`r end_code()`
 
-```{r, echo = FALSE}
-# 2024
-val_2024 <- 3.35 * 2192.33
-# 2025
-val_2025 <- 3.03 * 2268.35
+**SQL approach for Table \@ref(tab:tab62)**
+
+1. Select 2025 sales and join them to customer records, grouping customers by whether they registered before 2025 or during 2025.
+2. For each registration group, calculate order count, total `total_price_eur`, and average order value.
+3. Separately count distinct active customers in each registration group.
+4. Join the summaries and calculate orders per active customer; format the monetary and count fields for the table.
 
 
-rev_incr <- 80000 * 2268.35 - 73500 * 2192.33
-scen1 <- (80000 - 73500) * 2192.33  # order value stay the same
-scen2 <- 73500 * (2268.35 - 2192.33)  # number of orders stays the same
-remaind <- rev_incr - scen1 - scen2
-```
-
-
+`r start_code()`
 
 ```{sql connection = con, output.var = "sql_q6_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Order count, average orders by active customer, total revenue,
@@ -587,6 +624,31 @@ SELECT signup_year, FORMAT(order_count, 0) AS order_count, ROUND(order_count / n
 	CONCAT('€', FORMAT(revenue, 2)) AS revenue, CONCAT('€', FORMAT(eur_per_order, 2)) AS value_per_order
 FROM joined_tab;
 ```
+
+`r end_code()`
+
+**Results**
+
+```{r tab-num-order, echo = FALSE}
+rownames(sql_q6_1) <- c("Number of orders", "Orders per capita")
+x <- knitr::kable(sql_q6_1,
+             col.names = c("2022", "2023", "2024", "2025"), align = c("r", "r", "r", "r"), caption = "Yearly order counts and average orders per active customer.", format = "pipe", row.names = TRUE)
+x
+```
+
+```{r, echo = FALSE}
+# 2024
+val_2024 <- 3.35 * 2192.33
+# 2025
+val_2025 <- 3.03 * 2268.35
+
+
+rev_incr <- 80000 * 2268.35 - 73500 * 2192.33
+scen1 <- (80000 - 73500) * 2192.33  # order value stay the same
+scen2 <- 73500 * (2268.35 - 2192.33)  # number of orders stays the same
+remaind <- rev_incr - scen1 - scen2
+```
+
 
 ```{r tab62, echo = FALSE}
 x <- knitr::kable(sql_q6_2,
