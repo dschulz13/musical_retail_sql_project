@@ -149,14 +149,17 @@ This section presents the results available so far, with tables, figures, and co
 1. Filter `sales` to transactions recorded in 2025.
 2. Sum `total_price_eur - shipping_fee_eur` to calculate sales after subtracting shipping fees.
 
-```{sql connection = con, output.var = "sql_q1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+
+<details><summary>Code</summary><p>
+
+```{sql connection = con, output.var = "sql_q1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2025
 SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2025
 FROM SALES
 WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 ```
 
-
+</p></details><br>
 
 ```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2024

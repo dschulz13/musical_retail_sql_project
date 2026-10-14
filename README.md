@@ -1,7 +1,7 @@
 Music Retailer Sales SQL Project
 ================
 Dominik Schulz,
-October 13, 2026
+October 14, 2026
 
 - [1 Executive summary](#1-executive-summary)
 - [2 Company & data information](#2-company--data-information)
@@ -144,6 +144,28 @@ topic and business question.
 1.  Filter `sales` to transactions recorded in 2025.
 2.  Sum `total_price_eur - shipping_fee_eur` to calculate sales after
     subtracting shipping fees.
+
+<details>
+
+<summary>
+
+Code
+</summary>
+
+<p>
+
+``` sql
+# Total sales in year 2025
+SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2025
+FROM SALES
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
+```
+
+</p>
+
+</details>
+
+<br>
 
 **SQL approach for absolute figures in Table
 <a href="#tab:sales-monthly-tab">5.1</a>**
