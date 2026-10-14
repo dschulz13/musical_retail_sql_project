@@ -202,7 +202,7 @@ inc_dec <- if (sales_change < 0) {
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q1_monthly1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q1_monthly1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales by month in year 2025 (Table 5.1, Row 1)
 WITH sales_long_tab AS (
 SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
@@ -244,7 +244,7 @@ sql_q1_monthly1 <- purrr::map_df(sql_q1_monthly1, function(.x) {
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q1_monthly2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q1_monthly2", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales by month in year 2025 (Table 5.1, Row 2)
 WITH sales_long_tab AS (
 SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
@@ -292,7 +292,7 @@ kable(tab_q1_monthly, caption = "Monthly total sales (absolute and relative) of 
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q1_2", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total sales in year 2024
 SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2024
 FROM SALES
@@ -311,7 +311,7 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q2_monthly", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q2_monthly", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Monthly sales comparison between 2024 and 2025 (Table 5.2)
 WITH suma_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur - shipping_fee_eur) AS total_sales
@@ -360,7 +360,7 @@ As Table \@ref(tab:sales-monthly-comp) shows, net sales increased in every month
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q3", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q3", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Total revenue increase in % by month for each year (Table 5.3)
 WITH agg_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur) AS revenue
@@ -406,7 +406,7 @@ The largest acceleration was in March, when the growth rate rose from 5.01% to 1
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q4_1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q4_1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Cumulative registered customers by year (Table 5.4)
 WITH year_tab AS (
 SELECT customer_id,
@@ -443,7 +443,7 @@ FROM sum_tab;
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q4_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q4_2", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Active customers by year (Table 5.5)
 WITH id_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, customer_id FROM sales),
@@ -506,7 +506,7 @@ Table \@ref(tab:act-cust-tab) shows the number of **active customers**, defined 
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q5", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q5", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Average order value by year (Table 5.6)
 WITH agg_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, AVG(total_price_eur) AS average_order_eur
@@ -545,7 +545,7 @@ According to Table \@ref(tab:tab-average-order), average order value fell slight
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q6_1", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q6_1", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Yearly order counts and average orders by active customer (Table 5.7)
 (WITH agg_tab AS (
 SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, COUNT(*) AS orders_placed
@@ -588,7 +588,7 @@ FROM agg_tab2);
 
 `r start_code()`
 
-```{sql connection = con, output.var = "sql_q6_2", warning = FALSE, echo = FALSE, purl = sql_chunk_activator(export_type)}
+```{sql connection = con, output.var = "sql_q6_2", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
 # Order count, average orders by active customer, total revenue,
 # and average order value by active customer for customers registered
 # before and in 2025 (Table 5.8)

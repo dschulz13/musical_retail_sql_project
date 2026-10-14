@@ -176,6 +176,29 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 Show code
 </summary>
 
+``` sql
+# Total sales by month in year 2025 (Table 5.1, Row 1)
+WITH sales_long_tab AS (
+SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
+GROUP BY EXTRACT(MONTH FROM sale_timestamp))
+SELECT
+    MAX(CASE WHEN month_numb = 1 THEN total_sales END) AS January,
+    MAX(CASE WHEN month_numb = 2 THEN total_sales END) AS February,
+    MAX(CASE WHEN month_numb = 3 THEN total_sales END) AS March,
+      MAX(CASE WHEN month_numb = 4 THEN total_sales END) AS April,
+    MAX(CASE WHEN month_numb = 5 THEN total_sales END) AS May,
+    MAX(CASE WHEN month_numb = 6 THEN total_sales END) AS June,    
+    MAX(CASE WHEN month_numb = 7 THEN total_sales END) AS July,  
+    MAX(CASE WHEN month_numb = 8 THEN total_sales END) AS August,
+    MAX(CASE WHEN month_numb = 9 THEN total_sales END) AS September,
+    MAX(CASE WHEN month_numb = 10 THEN total_sales END) AS October,
+    MAX(CASE WHEN month_numb = 11 THEN total_sales END) AS November,
+    MAX(CASE WHEN month_numb = 12 THEN total_sales END) AS December
+FROM sales_long_tab;
+```
+
 </details>
 
 **SQL approach for relative figures in Table
@@ -193,6 +216,29 @@ Show code
 <summary>
 Show code
 </summary>
+
+``` sql
+# Total sales by month in year 2025 (Table 5.1, Row 2)
+WITH sales_long_tab AS (
+SELECT EXTRACT(MONTH FROM sale_timestamp) AS month_numb, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
+GROUP BY EXTRACT(MONTH FROM sale_timestamp))
+SELECT
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 1 THEN total_sales END) / SUM(total_sales), 2), '%') AS January,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 2 THEN total_sales END) / SUM(total_sales), 2), '%') AS February,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 3 THEN total_sales END) / SUM(total_sales), 2), '%') AS March,
+      CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 4 THEN total_sales END) / SUM(total_sales), 2), '%') AS April,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 5 THEN total_sales END) / SUM(total_sales), 2), '%') AS May,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 6 THEN total_sales END) / SUM(total_sales), 2), '%') AS June,    
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 7 THEN total_sales END) / SUM(total_sales), 2), '%') AS July,  
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 8 THEN total_sales END) / SUM(total_sales), 2), '%') AS August,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 9 THEN total_sales END) / SUM(total_sales), 2), '%') AS September,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 10 THEN total_sales END) / SUM(total_sales), 2), '%') AS October,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 11 THEN total_sales END) / SUM(total_sales), 2), '%') AS November,
+    CONCAT(ROUND(100 * MAX(CASE WHEN month_numb = 12 THEN total_sales END) / SUM(total_sales), 2), '%') AS December
+FROM sales_long_tab;
+```
 
 </details>
 
@@ -229,6 +275,13 @@ sales, indicating a pronounced fourth-quarter peak.
 Show code
 </summary>
 
+``` sql
+# Total sales in year 2024
+SELECT SUM(total_price_eur - shipping_fee_eur) AS total_sales_2024
+FROM SALES
+WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
+```
+
 </details>
 
 **SQL approach for Table <a href="#tab:sales-monthly-comp">5.2</a>**
@@ -247,6 +300,27 @@ Show code
 <summary>
 Show code
 </summary>
+
+``` sql
+# Monthly sales comparison between 2024 and 2025 (Table 5.2)
+WITH suma_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur - shipping_fee_eur) AS total_sales
+FROM sales
+WHERE EXTRACT(YEAR FROM sale_timestamp) BETWEEN 2024 AND 2025
+GROUP BY EXTRACT(YEAR FROM sale_timestamp), EXTRACT(MONTH FROM sale_timestamp), MONTHNAME(sale_timestamp)),
+lag_tab AS (
+SELECT year_numb, month_numb, month_name, LAG(total_sales, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS total_sales_2024, total_sales AS total_sales_2025
+FROM suma_tab),
+comp_tab AS (
+SELECT month_name, total_sales_2024, total_sales_2025 FROM lag_tab
+WHERE year_numb = 2025
+ORDER BY month_numb ASC)
+SELECT month_name, CONCAT('€', FORMAT(total_sales_2024, 2)) AS total_sales_2024,
+    CONCAT('€', FORMAT(total_sales_2025, 2)) AS total_sales_2025,
+    CONCAT('€', FORMAT(total_sales_2025 - total_sales_2024, 2)) AS abs_change,
+    CONCAT(ROUND(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%') AS rel_change
+FROM comp_tab;
+```
 
 </details>
 
@@ -297,6 +371,26 @@ October, November, and December.
 <summary>
 Show code
 </summary>
+
+``` sql
+# Total revenue increase in % by month for each year (Table 5.3)
+WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, EXTRACT(MONTH FROM sale_timestamp) AS month_numb, MONTHNAME(sale_timestamp) AS month_name, SUM(total_price_eur) AS revenue
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp), EXTRACT(MONTH FROM sale_timestamp), MONTHNAME(sale_timestamp)),
+lag_tab AS (
+SELECT year_numb, month_numb, month_name, LAG(revenue, 3) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2022,
+    LAG(revenue, 2) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2023,
+    LAG(revenue, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2024,
+    revenue AS rev_2025
+FROM agg_tab)
+SELECT month_name, CONCAT(ROUND(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%') AS change_22_23,
+    CONCAT(ROUND(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%') AS change_23_24,
+    CONCAT(ROUND(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%') AS change_24_25
+FROM lag_tab
+WHERE year_numb = 2025
+ORDER BY month_numb;
+```
 
 </details>
 
@@ -350,6 +444,32 @@ net-of-shipping basis as the sales totals in Sections 6.1.1–6.1.2.
 Show code
 </summary>
 
+``` sql
+# Cumulative registered customers by year (Table 5.4)
+WITH year_tab AS (
+SELECT customer_id,
+    CASE
+        WHEN EXTRACT(YEAR FROM signup_timestamp) <= 2022 THEN 2022
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2023 THEN 2023
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2024 THEN 2024
+        WHEN EXTRACT(YEAR FROM signup_timestamp) = 2025 THEN 2025
+    END AS registered_by
+FROM customers_cleaned),
+agg_tab AS (
+SELECT registered_by, COUNT(DISTINCT customer_id) AS new_registrations
+FROM year_tab
+GROUP BY registered_by),
+sum_tab AS (
+SELECT registered_by AS year, SUM(new_registrations) OVER (ORDER BY registered_by ASC) AS cum_registrations
+FROM agg_tab)
+SELECT
+    FORMAT(MAX(CASE WHEN year = 2022 THEN cum_registrations END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN year = 2023 THEN cum_registrations END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN year = 2024 THEN cum_registrations END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN year = 2025 THEN cum_registrations END), 0) AS year_2025
+FROM sum_tab;
+```
+
 </details>
 
 **SQL approach for Table <a href="#tab:act-cust-tab">5.5</a>**
@@ -363,6 +483,22 @@ Show code
 <summary>
 Show code
 </summary>
+
+``` sql
+# Active customers by year (Table 5.5)
+WITH id_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, customer_id FROM sales),
+agg_tab AS (
+SELECT year_numb, COUNT(DISTINCT customer_id) AS numb_active_cust
+FROM id_tab
+GROUP BY year_numb)
+SELECT
+    FORMAT(MAX(CASE WHEN year_numb = 2022 THEN numb_active_cust END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN year_numb = 2023 THEN numb_active_cust END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN year_numb = 2024 THEN numb_active_cust END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN year_numb = 2025 THEN numb_active_cust END), 0) AS year_2025
+FROM agg_tab;
+```
 
 </details>
 
@@ -407,6 +543,20 @@ from **87.63%** to **90.39%**, and was **88.03%** in 2025.
 Show code
 </summary>
 
+``` sql
+# Average order value by year (Table 5.6)
+WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, AVG(total_price_eur) AS average_order_eur
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp))
+SELECT
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2022 THEN average_order_eur END), 2)) AS year_2022,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2023 THEN average_order_eur END), 2)) AS year_2023,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2024 THEN average_order_eur END), 2)) AS year_2024,
+    CONCAT('€', FORMAT(MAX(CASE WHEN year_numb = 2025 THEN average_order_eur END), 2)) AS year_2025
+FROM agg_tab;
+```
+
 </details>
 
 **Results**
@@ -442,6 +592,37 @@ it does not subtract shipping fees.
 Show code
 </summary>
 
+``` sql
+# Yearly order counts and average orders by active customer (Table 5.7)
+(WITH agg_tab AS (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, COUNT(*) AS orders_placed
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp))
+SELECT
+    FORMAT(MAX(CASE WHEN sale_year = 2022 THEN orders_placed END), 0) AS year_2022,
+    FORMAT(MAX(CASE WHEN sale_year = 2023 THEN orders_placed END), 0) AS year_2023,
+    FORMAT(MAX(CASE WHEN sale_year = 2024 THEN orders_placed END), 0) AS year_2024,
+    FORMAT(MAX(CASE WHEN sale_year = 2025 THEN orders_placed END), 0) AS year_2025
+FROM agg_tab)
+UNION ALL
+(WITH agg_tab2 AS (
+SELECT tab1.year_numb AS year_numb, ROUND(tab2.orders_placed / tab1.active_cust_count, 2) AS orders_per_capita
+FROM (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS year_numb, COUNT(DISTINCT customer_id) AS active_cust_count
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp)) AS tab1
+INNER JOIN (
+SELECT EXTRACT(YEAR FROM sale_timestamp) AS sale_year, COUNT(*) AS orders_placed
+FROM sales
+GROUP BY EXTRACT(YEAR FROM sale_timestamp)) AS tab2 ON tab1.year_numb = tab2.sale_year)
+SELECT
+    MAX(CASE WHEN year_numb = 2022 THEN orders_per_capita END) AS year_2022,
+    MAX(CASE WHEN year_numb = 2023 THEN orders_per_capita END) AS year_2023,
+    MAX(CASE WHEN year_numb = 2024 THEN orders_per_capita END) AS year_2024,
+    MAX(CASE WHEN year_numb = 2025 THEN orders_per_capita END) AS year_2025
+FROM agg_tab2);
+```
+
 </details>
 
 **SQL approach for Table <a href="#tab:tab62">5.8</a>**
@@ -460,6 +641,43 @@ Show code
 <summary>
 Show code
 </summary>
+
+``` sql
+# Order count, average orders by active customer, total revenue,
+# and average order value by active customer for customers registered
+# before and in 2025 (Table 5.8)
+WITH joined_tab AS (
+SELECT tab1.signup_year, tab2.numb_act_cust, tab1.order_count, tab1.revenue, tab1.eur_per_order FROM (
+WITH comb_tab AS (
+SELECT sa.sale_id, sa.customer_id, 
+    CASE
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) <= 2024 THEN 'before 2025'
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) = 2025 THEN 'in 2025'
+    END AS signup_year,
+    sa.total_price_eur
+FROM sales AS sa
+INNER JOIN customers AS c ON sa.customer_id = c.customer_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025)
+SELECT signup_year, COUNT(*) AS order_count, SUM(total_price_eur) AS revenue, SUM(total_price_eur) / COUNT(*) AS eur_per_order
+FROM comb_tab
+GROUP BY signup_year) AS tab1
+INNER JOIN (
+WITH c2tab AS (
+SELECT sa.customer_id,
+    CASE
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) <= 2024 THEN 'before 2025'
+        WHEN EXTRACT(YEAR FROM c.signup_timestamp) = 2025 THEN 'in 2025'
+    END AS signup_year
+FROM sales AS sa
+INNER JOIN customers AS c ON sa.customer_id = c.customer_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025)
+SELECT signup_year, COUNT(DISTINCT customer_id) AS numb_act_cust
+FROM c2tab
+GROUP BY signup_year) AS tab2 ON tab1.signup_year = tab2.signup_year)
+SELECT signup_year, FORMAT(order_count, 0) AS order_count, ROUND(order_count / numb_act_cust, 2) AS orders_per_capita,
+    CONCAT('€', FORMAT(revenue, 2)) AS revenue, CONCAT('€', FORMAT(eur_per_order, 2)) AS value_per_order
+FROM joined_tab;
+```
 
 </details>
 
