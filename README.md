@@ -146,6 +146,7 @@ topic and business question.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -169,6 +170,7 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -210,6 +212,7 @@ FROM sales_long_tab;
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -268,6 +271,7 @@ sales, indicating a pronounced fourth-quarter peak.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -294,6 +298,7 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -365,6 +370,7 @@ October, November, and December.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -437,6 +443,7 @@ net-of-shipping basis as the sales totals in Sections 6.1.1–6.1.2.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -477,6 +484,7 @@ FROM sum_tab;
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -536,6 +544,7 @@ from **87.63%** to **90.39%**, and was **88.03%** in 2025.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -585,6 +594,7 @@ it does not subtract shipping fees.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -635,6 +645,7 @@ FROM agg_tab2);
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -756,6 +767,7 @@ purchases that would have happened anyway.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -829,6 +841,7 @@ buyers.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -913,11 +926,11 @@ exhaustive.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-dist-rev-1.png" alt="Histogram and kernel density of customer-level revenue in 2025." width="960" />
+<img src="README_files/figure-gfm/fig-dist-rev-1.png" alt="Histogram and kernel density estimate of customer-level revenue in 2025." width="960" />
 <p class="caption">
 
 <span id="fig:fig-dist-rev"></span>Figure 5.1: Histogram and kernel
-density of customer-level revenue in 2025.
+density estimate of customer-level revenue in 2025.
 </p>
 
 </div>
@@ -942,6 +955,7 @@ upper tail easier to see.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -1041,6 +1055,7 @@ repeat-purchase intervals are strongly right-skewed.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -1152,6 +1167,8 @@ private customers projected onto the first two principal components.
 
 </div>
 
+<img src="README_files/figure-gfm/unnamed-chunk-24-3.png" alt="" width="768" style="display: block; margin: auto;" />
+
 Figure <a href="#fig:fig-clust-private">5.2</a> shows three K-Means
 clusters for private customers, fitted to six standardized numerical
 features: revenue, order count, average revenue per order, recency, time
@@ -1172,7 +1189,7 @@ those of the first cluster.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-detail-3.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-detail-5.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-private-detail"></span>Figure 5.3: Centroids of
@@ -1183,7 +1200,7 @@ private customer clusters scaled between 0 and 1.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-5.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-7.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business"></span>Figure 5.4: K-Means clusters
@@ -1205,7 +1222,7 @@ customer segment value.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-detail-7.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-detail-9.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business-detail"></span>Figure 5.5: Centroids of
@@ -1229,6 +1246,7 @@ business customer clusters scaled between 0 and 1.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -1284,6 +1302,7 @@ become very large when a customer’s 2024 revenue was small.
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -1322,6 +1341,7 @@ ORDER BY sale_year DESC, ranking ASC;
 <details>
 
 <summary>
+
 Show code
 </summary>
 
@@ -1360,6 +1380,7 @@ ORDER BY sale_year DESC, ranking ASC;
 <details>
 
 <summary>
+
 Show code
 </summary>
 

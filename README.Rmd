@@ -805,7 +805,7 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025
 GROUP BY customer_id;
 ```
 
-```{python fig-dist-rev, echo = FALSE, eval = TRUE, fig.cap = "Histogram and kernel density of customer-level revenue in 2025."}
+```{python fig-dist-rev, echo = FALSE, eval = TRUE, fig.cap = "Histogram and kernel density estimate of customer-level revenue in 2025."}
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -814,19 +814,24 @@ import matplotlib.ticker as ticker
 
 revenue = r.sql_hist_rev['revenue'].to_numpy()
 fig, ax = plt.subplots(1, 1, figsize = (10, 5))
-sns.histplot(data = revenue, stat = 'density', kde = True, bins = 30, ax = ax,
-  color = 'white',
+
+sns.histplot(data = revenue, stat = 'count', kde = True, binwidth = 1000, binrange = (0, 75000), ax = ax,
+  color = '#ADD8E6',
   edgecolor = 'black',
+  alpha = 1,
   line_kws={
-    "color": "red",   
+    "color": "#00008B",   
     "linewidth": 3,       
     "linestyle": "-" 
 })
-ax.lines[0].set_color("crimson")
+ax.lines[0].set_color("#00008B")
 ax.set_xlabel('Revenue by customer in 2025')
-ax.set_ylabel('Density')
+ax.set_ylabel('Number of customers')
 ax.set_title('Distribution of customer-level revenue in 2025')
 ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('€{x:,.0f}'))
+ax.yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+ax.grid(axis = 'y', zorder = 0)
+ax.set_axisbelow(True)
 ```
 
 Figure \@ref(fig:fig-dist-rev), created in Python, combines a histogram of customer-level revenue in 2025 with a kernel density estimate. The plot makes the distribution’s strong right skew and long upper tail easier to see.
@@ -1088,6 +1093,23 @@ ax.set_ylabel('Principal component 2 (roughly level of average spending per orde
 ax.set_title('Private customer segments')
 ```
 
+```{python}
+s_ = 4  # scaling for arrows
+
+fig, ax = plt.subplots(1, 1, figsize = (8, 8))
+
+ax.scatter(scores[:, 0], scores[:, 1], color = '#D3D3D3', alpha = 0.3);
+
+components = pca_fit.components_
+dim = components.shape[1]
+
+for k in range(dim):
+  ax.arrow(0, 0, s_ * components[0, k], s_ * components[1, k])
+  ax.text(s_ * components[0, k], s_ * components[1, k], data_cust_private_red.columns[k])
+
+```
+
+
 Figure \@ref(fig:fig-clust-private) shows three K-Means clusters for private customers, fitted to six standardized numerical features: revenue, order count, average revenue per order, recency, time since first purchase, and number of product categories purchased. Principal component analysis (PCA) projects those features into two dimensions for visualization. The axes are weighted combinations of the original features, not direct measures of engagement or spending, but analyzing the weights of the PCA allows to describe the two axes roughly as the level of customer activity with the company and the average spending per order.
 
 A tentative interpretation of the clusters is that one group has lower-to-moderate order activity and spending, another has higher activity but lower-to-moderate spending per order, and a third has lower-to-moderate activity but higher spending per order. Members of the second and third cluster can be considered to be more valuable than those of the first cluster.
@@ -1124,6 +1146,8 @@ ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
 ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
 ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value")
 ax.set_title('Detailed centroid comparison')
+ax.grid(axis = 'y', zorder = 0)
+ax.set_axisbelow(True)
 ```
 
 
@@ -1211,6 +1235,8 @@ ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
 ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
 ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value")
 ax.set_title('Detailed centroid comparison')
+ax.grid(axis = 'y', zorder = 0)
+ax.set_axisbelow(True)
 ```
 
 ### Are customers becoming more or less valuable?
