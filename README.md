@@ -1309,7 +1309,7 @@ centroid_plot(clust_fit_bus, data_cust_bus_red)
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/biplot-private-1.png" alt="Biplot of PCA applied to private customer data." width="960" />
+<img src="README_files/figure-gfm/biplot-private-3.png" alt="Biplot of PCA applied to private customer data." width="960" />
 <p class="caption">
 
 <span id="fig:biplot-private"></span>Figure 5.2: Biplot of PCA applied
@@ -1320,7 +1320,7 @@ to private customer data.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/biplot-business-3.png" alt="Biplot of PCA applied to business customer data." width="960" />
+<img src="README_files/figure-gfm/biplot-business-5.png" alt="Biplot of PCA applied to business customer data." width="960" />
 <p class="caption">
 
 <span id="fig:biplot-business"></span>Figure 5.3: Biplot of PCA applied
@@ -1353,7 +1353,7 @@ spending per order.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-5.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-7.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-private"></span>Figure 5.4: K-Means clusters for
@@ -1364,7 +1364,7 @@ private customers projected onto the first two principal components.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-7.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-9.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business"></span>Figure 5.5: K-Means clusters
@@ -1398,7 +1398,7 @@ maximum value) in Figures
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-detail-9.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-detail-11.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-private-detail"></span>Figure 5.6: Centroids of
@@ -1409,7 +1409,7 @@ private customer clusters scaled between 0 and 1.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-detail-11.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-detail-13.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business-detail"></span>Figure 5.7: Centroids of
@@ -1844,11 +1844,243 @@ respect to the corresponding 2024 quarter.
 
 ### 5.3.3 Which products have poor sales?
 
+**SQL approach for Table <a href="#tab:tab16">5.18</a>**
+
+1.  Join the `sales`, `sale_items`, and `products_cleaned` tables on
+    `sale_id` and `product_id`.
+2.  Sum revenue and units sold by product and filter for year 2025 and
+    items being sold the entire year.
+3.  Filter by `units_sold <= 5` and `revenue <= 500`.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+``` sql
+# Products with poor sales in 2025 (Table 5.18)
+WITH agg_tab AS (
+SELECT si.product_id, pr.product_name, SUM(si.units_sold) AS units_sold, SUM(si.line_total_eur) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025 AND pr.available_from <= '2025-01-01'
+GROUP BY product_id
+ORDER BY SUM(si.line_total_eur) ASC)
+SELECT product_name, FORMAT(units_sold, 0), CONCAT('€', FORMAT(revenue, 2))
+FROM agg_tab
+WHERE units_sold <= 5 AND revenue <= 500;
+```
+
+</details>
+
+| Product                                           | Units sold | Revenue |
+|:--------------------------------------------------|-----------:|--------:|
+| Holz & Draht Mandolin Urban 224 White             |          3 |  €68.73 |
+| GigGear Power Supply Stage 397 Walnut             |          5 |  €72.80 |
+| Pulse DJ LED Fixture Urban 505 Transparent        |          1 | €182.28 |
+| Holz & Draht Mandolin Select 667 Red              |          3 | €198.06 |
+| Rhein Percussion Percussion Pro 587 Cherry        |          5 | €220.05 |
+| Saitenwerk Mandolin Tour 480 Black                |          3 | €251.02 |
+| Atemklang Flute Deluxe 104 Walnut                 |          1 | €269.03 |
+| BeatHaus Percussion Essential 88 Navy             |          3 | €287.85 |
+| Velvet Oak Classical Guitar Performance 753 Black |          2 | €335.02 |
+| Studiohaus Mixer Stage 357 Transparent            |          2 | €496.92 |
+
+<span id="tab:tab16"></span>Table 5.18: Products with poor sales
+performance in 2025. They have simultaneously not sold more than five
+units and not made more than €500,00 in total revenue.
+
 ### 5.3.4 How concentrated is revenue among products?
+
+**SQL approach for Table <a href="#tab:tab17">5.19</a>**
+
+1.  Join `sale`, `sale_items`, and `products_cleaned` tables on
+    `sale_id` and `product_id`.
+2.  Compute the sum of revenue in 2025 by product.
+3.  Generate a table containing histogram bin borders via cross joins.
+4.  Join revenue and bin border tables.
+5.  Count occurrences per interval.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+``` sql
+# Histogram of revenue by number of products (Table 5.19)
+WITH agg_tab AS (
+SELECT si.product_id, pr.product_name, SUM(si.line_total_eur) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025
+GROUP BY si.product_id),
+group_tab AS (
+SELECT ht.hthousands + mt.millions AS lower_bound,
+    (LEAD(ht.hthousands + mt.millions, 1) OVER (ORDER BY ht.hthousands + mt.millions ASC)) - 0.01 AS upper_bound,
+    CONCAT('[€', FORMAT(ht.hthousands + mt.millions, 2), ', €', FORMAT((LEAD(ht.hthousands + mt.millions, 1) OVER (ORDER BY ht.hthousands + mt.millions ASC)), 2), ')') AS interv FROM
+(SELECT 0 AS hthousands
+UNION ALL SELECT 100000
+UNION ALL SELECT 200000
+UNION ALL SELECT 300000
+UNION ALL SELECT 400000
+UNION ALL SELECT 500000
+UNION ALL SELECT 600000
+UNION ALL SELECT 700000
+UNION ALL SELECT 800000
+UNION ALL SELECT 900000) AS ht
+CROSS JOIN
+(SELECT 0 AS millions
+UNION ALL SELECT 1000000
+UNION ALL SELECT 2000000) AS mt
+ORDER BY ht.hthousands + mt.millions ASC),
+assign_tab AS (
+SELECT atab.product_id, gtab.interv, gtab.lower_bound
+FROM agg_tab AS atab
+LEFT JOIN group_tab AS gtab ON atab.revenue BETWEEN gtab.lower_bound AND gtab.upper_bound)
+SELECT interv, COUNT(product_id) AS count_numb
+FROM assign_tab
+GROUP BY interv, lower_bound
+ORDER BY lower_bound ASC;
+```
+
+</details>
+
+| Interval                        | Count |
+|:--------------------------------|------:|
+| \[€0.00, €100,000.00)           |  2903 |
+| \[€100,000.00, €200,000.00)     |   309 |
+| \[€200,000.00, €300,000.00)     |   120 |
+| \[€300,000.00, €400,000.00)     |    55 |
+| \[€400,000.00, €500,000.00)     |    29 |
+| \[€500,000.00, €600,000.00)     |    11 |
+| \[€600,000.00, €700,000.00)     |     3 |
+| \[€700,000.00, €800,000.00)     |     6 |
+| \[€800,000.00, €900,000.00)     |     2 |
+| \[€900,000.00, €1,000,000.00)   |     2 |
+| \[€1,100,000.00, €1,200,000.00) |     1 |
+| \[€1,200,000.00, €1,300,000.00) |     1 |
+| \[€1,300,000.00, €1,400,000.00) |     1 |
+| \[€1,600,000.00, €1,700,000.00) |     1 |
+
+<span id="tab:tab17"></span>Table 5.19: Tabular histogram showing the
+number of products generating a certain amount of revenue in 2025.
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/unnamed-chunk-33-1.png" alt="Distribution of revenue in 2025 by number of products within specified revenue ranges." width="960" />
+<p class="caption">
+
+<span id="fig:unnamed-chunk-33"></span>Figure 5.8: Distribution of
+revenue in 2025 by number of products within specified revenue ranges.
+</p>
+
+</div>
 
 ### 5.3.5 Which products are newly introduced?
 
+**SQL approach for Table <a href="#tab:tab18">5.20</a>**
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+``` sql
+SELECT pr.product_name, pr.category, DATE_FORMAT(pr.available_from, '%Y-%m-%d') AS available_from,
+    FORMAT(SUM(si.units_sold), 0) AS units_sold,
+    CONCAT('€', FORMAT(SUM(si.line_total_eur), 2)) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM pr.available_from) = 2025
+GROUP BY si.product_id
+ORDER BY SUM(si.line_total_eur) DESC
+LIMIT 20;
+```
+
+</details>
+
+| Product | Category | Introduced at | Sold units | Revenue |
+|:---|:---|---:|---:|---:|
+| Silverline Electric Guitar Stage 547 Sunburst | Guitars & Basses | 2025-01-01 | 96 | €777,884.48 |
+| Altona Classical Guitar Stage 72 Vintage White | Guitars & Basses | 2025-01-01 | 108 | €770,621.04 |
+| Eichenberg Electric Guitar Prime 281 White | Guitars & Basses | 2025-02-01 | 82 | €663,331.62 |
+| Westwerk Electric Guitar Stage 15 Blue | Guitars & Basses | 2025-04-01 | 69 | €467,900.04 |
+| Bläserhaus Trumpet Classic 912 Blue | Brass & Woodwinds | 2025-04-01 | 62 | €399,994.24 |
+| Westwerk Electric Guitar Mk II 199 Walnut | Guitars & Basses | 2025-06-01 | 46 | €381,517.56 |
+| Venue Audio Active Speaker Stage 256 Transparent | PA & Live Sound | 2025-04-01 | 54 | €375,216.84 |
+| Nordstern Classical Guitar Select 345 Navy | Guitars & Basses | 2025-04-01 | 40 | €374,819.20 |
+| Velvet Oak Acoustic Guitar Mk II 344 Green | Guitars & Basses | 2025-04-01 | 71 | €366,230.07 |
+| Bläserhaus Trumpet Deluxe 848 Natural | Brass & Woodwinds | 2025-05-01 | 47 | €363,883.87 |
+| Nordstern Ukulele Stage 280 Navy | Guitars & Basses | 2025-07-01 | 88 | €337,098.96 |
+| Elbe Piano Stage Piano Tour 641 Vintage White | Keyboards & Pianos | 2025-05-01 | 47 | €317,138.14 |
+| Tonraum Synthesizer Urban 191 Black | Keyboards & Pianos | 2025-09-01 | 50 | €299,708.50 |
+| Silverline Bass Guitar Urban 641 Red | Guitars & Basses | 2025-03-01 | 78 | €279,718.92 |
+| Rhein Percussion Snare Drum Select 198 Natural | Drums & Percussion | 2025-07-01 | 59 | €259,041.86 |
+| Nightline LED Fixture Urban 269 Silver | DJ & Lighting | 2025-01-01 | 77 | €250,343.94 |
+| Klangwerk Electronic Drum Kit Essential 454 Black | Drums & Percussion | 2025-04-01 | 55 | €250,310.50 |
+| Studiohaus Headphones Tour 844 Walnut | Studio & Recording | 2025-03-01 | 67 | €246,347.03 |
+| Mixwerk Headphones Performance 914 Maple | Studio & Recording | 2025-05-01 | 54 | €244,028.70 |
+| Blech & Holz Clarinet Urban 337 Maple | Brass & Woodwinds | 2025-05-01 | 27 | €236,611.26 |
+
+<span id="tab:tab18"></span>Table 5.20: Top 20 of products in 2025 (by
+revenue generated) newly introduced in 2025.
+
 ### 5.3.6 Which products have been discontinued?
+
+**SQL approach for Table <a href="#tab:tab19">5.21</a>**
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+``` sql
+SELECT pr.product_name, pr.category, DATE_FORMAT(pr.discontinued_at, '%Y-%m-%d') AS discontinued_at,
+    FORMAT(SUM(si.units_sold), 0) AS units_sold, 
+    CONCAT('€', FORMAT(SUM(si.line_total_eur), 2)) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025 AND EXTRACT(YEAR FROM pr.discontinued_at) = 2025
+GROUP BY si.product_id
+ORDER BY SUM(si.line_total_eur) DESC
+LIMIT 20;
+```
+
+</details>
+
+| Product | Category | Discontinued at | Sold units | Revenue |
+|:---|:---|---:|---:|---:|
+| Westwerk Classical Guitar Compact 450 Vintage White | Guitars & Basses | 2025-11-30 | 79 | €514,582.80 |
+| Bogen Drum Snare Drum Urban 911 Navy | Drums & Percussion | 2025-11-30 | 74 | €283,264.74 |
+| Nordstern Bass Guitar Tour 161 Navy | Guitars & Basses | 2025-07-31 | 35 | €235,835.25 |
+| Nordlicht Stage Piano Compact 878 Red | Keyboards & Pianos | 2025-09-30 | 53 | €180,461.13 |
+| Atemklang Trumpet Pro 61 Cherry | Brass & Woodwinds | 2025-06-30 | 24 | €173,103.78 |
+| Windwerk Saxophone Pro 751 Cherry | Brass & Woodwinds | 2025-09-30 | 17 | €161,577.35 |
+| ClubTone LED Fixture Pro 457 Maple | DJ & Lighting | 2025-11-30 | 50 | €158,614.12 |
+| Tonraum Synthesizer Prime 439 Blue | Keyboards & Pianos | 2025-09-30 | 56 | €137,313.61 |
+| Silverline Bass Guitar Performance 976 Silver | Guitars & Basses | 2025-08-31 | 21 | €132,241.20 |
+| BeatCircuit Effect Machine Mk II 432 Transparent | DJ & Lighting | 2025-04-30 | 26 | €128,185.98 |
+| Nordstern Bass Guitar Pro 726 Maple | Guitars & Basses | 2025-05-31 | 54 | €125,714.70 |
+| Auralab Audio Interface Mk II 269 Vintage White | Studio & Recording | 2025-12-31 | 21 | €108,695.58 |
+| Pick & Plug Stand Deluxe 859 Red | Accessories | 2025-11-30 | 46 | €105,266.86 |
+| Mixwerk Microphone Select 500 Walnut | Studio & Recording | 2025-08-31 | 48 | €98,842.56 |
+| Bergklang Synthesizer Classic 174 Red | Keyboards & Pianos | 2025-12-31 | 37 | €76,147.72 |
+| Silverline Ukulele Vintage 466 Cherry | Guitars & Basses | 2025-08-31 | 48 | €74,006.08 |
+| Bergklang Digital Piano Classic 701 Natural | Keyboards & Pianos | 2025-10-31 | 19 | €65,876.23 |
+| Studiohaus Studio Monitor Select 712 Sunburst | Studio & Recording | 2025-07-31 | 25 | €65,501.25 |
+| GigGear Music Stool Urban 457 Navy | Accessories | 2025-07-31 | 63 | €61,571.79 |
+| Elbe Piano Synthesizer Urban 411 Cherry | Keyboards & Pianos | 2025-12-31 | 87 | €54,900.60 |
+
+<span id="tab:tab19"></span>Table 5.21: Top 20 of products in 2025 (by
+revenue generated) discontinued in 2025.
 
 ## 5.4 Pricing
 

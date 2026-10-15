@@ -1637,11 +1637,185 @@ x
 
 ### Which products have poor sales?
 
+**SQL approach for Table \@ref(tab:tab16)**
+
+1. Join the `sales`, `sale_items`, and `products_cleaned` tables on `sale_id` and `product_id`.
+2. Sum revenue and units sold by product and filter for year 2025 and items being sold the entire year.
+3. Filter by `units_sold <= 5` and `revenue <= 500`.
+
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q14", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
+# Products with poor sales in 2025 (Table 5.18)
+WITH agg_tab AS (
+SELECT si.product_id, pr.product_name, SUM(si.units_sold) AS units_sold, SUM(si.line_total_eur) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025 AND pr.available_from <= '2025-01-01'
+GROUP BY product_id
+ORDER BY SUM(si.line_total_eur) ASC)
+SELECT product_name, FORMAT(units_sold, 0), CONCAT('€', FORMAT(revenue, 2))
+FROM agg_tab
+WHERE units_sold <= 5 AND revenue <= 500;
+```
+
+`r end_code()`
+
+```{r tab16, echo = FALSE}
+x <- knitr::kable(sql_q14,
+             col.names = c("Product", "Units sold", "Revenue"), align = c("l", "r", "r"), caption = "Products with poor sales performance in 2025. They have simultaneously not sold more than five units and not made more than €500,00 in total revenue.", format = "pipe")
+x
+```
+
 ### How concentrated is revenue among products?
+
+**SQL approach for Table \@ref(tab:tab17)**
+
+1. Join `sale`, `sale_items`, and `products_cleaned` tables on `sale_id` and `product_id`.
+2. Compute the sum of revenue in 2025 by product.
+3. Generate a table containing histogram bin borders via cross joins.
+4. Join revenue and bin border tables.
+5. Count occurrences per interval.
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q15", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
+# Histogram of revenue by number of products (Table 5.19)
+WITH agg_tab AS (
+SELECT si.product_id, pr.product_name, SUM(si.line_total_eur) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025
+GROUP BY si.product_id),
+group_tab AS (
+SELECT ht.hthousands + mt.millions AS lower_bound,
+	(LEAD(ht.hthousands + mt.millions, 1) OVER (ORDER BY ht.hthousands + mt.millions ASC)) - 0.01 AS upper_bound,
+    CONCAT('[€', FORMAT(ht.hthousands + mt.millions, 2), ', €', FORMAT((LEAD(ht.hthousands + mt.millions, 1) OVER (ORDER BY ht.hthousands + mt.millions ASC)), 2), ')') AS interv FROM
+(SELECT 0 AS hthousands
+UNION ALL SELECT 100000
+UNION ALL SELECT 200000
+UNION ALL SELECT 300000
+UNION ALL SELECT 400000
+UNION ALL SELECT 500000
+UNION ALL SELECT 600000
+UNION ALL SELECT 700000
+UNION ALL SELECT 800000
+UNION ALL SELECT 900000) AS ht
+CROSS JOIN
+(SELECT 0 AS millions
+UNION ALL SELECT 1000000
+UNION ALL SELECT 2000000) AS mt
+ORDER BY ht.hthousands + mt.millions ASC),
+assign_tab AS (
+SELECT atab.product_id, gtab.interv, gtab.lower_bound
+FROM agg_tab AS atab
+LEFT JOIN group_tab AS gtab ON atab.revenue BETWEEN gtab.lower_bound AND gtab.upper_bound)
+SELECT interv, COUNT(product_id) AS count_numb
+FROM assign_tab
+GROUP BY interv, lower_bound
+ORDER BY lower_bound ASC;
+```
+
+`r end_code()`
+
+```{r tab17, echo = FALSE}
+x <- knitr::kable(sql_q15,
+             col.names = c("Interval", "Count"), align = c("l", "r"), caption = "Tabular histogram showing the number of products generating a certain amount of revenue in 2025.", format = "pipe")
+x
+```
+
+```{sql connection = con, output.var = "sql_q15_2", warning = FALSE, echo = FALSE, purl = FALSE}
+SELECT si.product_id, pr.product_name, SUM(si.line_total_eur) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025
+GROUP BY si.product_id;
+```
+
+
+```{python, echo = FALSE, fig.cap = "Distribution of revenue in 2025 by number of products within specified revenue ranges."}
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import matplotlib.ticker as ticker
+
+rev_vec = r.sql_q15_2['revenue'].to_numpy()
+fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+sns.histplot(rev_vec, binwidth = 10000, binrange = (0, 1610000), ax = ax,
+  kde = True,   color = '#ADD8E6', edgecolor = 'black', alpha = 1,
+  line_kws = {
+    'color': '#00008B',
+    'linewidth': 3,
+    'linestyle': '-'
+  });
+ax.lines[0].set_color("#00008B");
+ax.set_xlabel('Revenue by product in 2025');
+ax.set_ylabel('Number of products');
+ax.set_title('Distribution of product-level revenue in 2025');
+ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('€{x:,.0f}'));
+ax.yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'));
+ax.grid(axis = 'y');
+ax.set_axisbelow(True);
+```
+
 
 ### Which products are newly introduced?
 
+**SQL approach for Table \@ref(tab:tab18)**
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q16", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
+SELECT pr.product_name, pr.category, DATE_FORMAT(pr.available_from, '%Y-%m-%d') AS available_from,
+	FORMAT(SUM(si.units_sold), 0) AS units_sold,
+	CONCAT('€', FORMAT(SUM(si.line_total_eur), 2)) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM pr.available_from) = 2025
+GROUP BY si.product_id
+ORDER BY SUM(si.line_total_eur) DESC
+LIMIT 20;
+```
+
+`r end_code()`
+
+```{r tab18, echo = FALSE}
+x <- knitr::kable(sql_q16,
+             col.names = c("Product", "Category", "Introduced at", "Sold units", "Revenue"), align = c("l", "l", "r", "r", "r"), caption = "Top 20 of products in 2025 (by revenue generated) newly introduced in 2025.", format = "pipe")
+x
+```
+
 ### Which products have been discontinued?
+
+**SQL approach for Table \@ref(tab:tab19)**
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q17", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
+SELECT pr.product_name, pr.category, DATE_FORMAT(pr.discontinued_at, '%Y-%m-%d') AS discontinued_at,
+	FORMAT(SUM(si.units_sold), 0) AS units_sold, 
+    CONCAT('€', FORMAT(SUM(si.line_total_eur), 2)) AS revenue
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE EXTRACT(YEAR FROM sa.sale_timestamp) = 2025 AND EXTRACT(YEAR FROM pr.discontinued_at) = 2025
+GROUP BY si.product_id
+ORDER BY SUM(si.line_total_eur) DESC
+LIMIT 20;
+```
+
+`r end_code()`
+
+```{r tab19, echo = FALSE}
+x <- knitr::kable(sql_q17,
+             col.names = c("Product", "Category", "Discontinued at", "Sold units", "Revenue"), align = c("l", "l", "r", "r", "r"), caption = "Top 20 of products in 2025 (by revenue generated) discontinued in 2025.", format = "pipe")
+x
+```
 
 
 ## Pricing
