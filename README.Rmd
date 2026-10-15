@@ -1049,7 +1049,7 @@ ORDER BY rt.revenue DESC;
 
 `r start_code("Python code")`
 
-```{python segmentation-functions, echo = TRUE, eval = TRUE, fig.cap = "K-Means clusters for private customers projected onto the first two principal components."}
+```{python segmentation-functions, echo = TRUE, eval = TRUE}
 # Import relevant libraries
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SC

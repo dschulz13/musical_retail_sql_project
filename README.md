@@ -1291,17 +1291,7 @@ clust_fit_bus = kmeans(data_cust_bus_red, n_clusters = 3)
 pca_fit_bus = pca(data_cust_bus_red)
 ```
 
-<div class="figure" style="text-align: center">
-
-<img src="README_files/figure-gfm/segmentation-functions-1.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
-<p class="caption">
-
-<span id="fig:segmentation-functions"></span>Figure 5.2: K-Means
-clusters for private customers projected onto the first two principal
-components.
-</p>
-
-</div>
+<img src="README_files/figure-gfm/segmentation-functions-1.png" alt="" width="960" style="display: block; margin: auto;" />
 
 ``` python
 # Biplots
@@ -1324,7 +1314,7 @@ centroid_plot(clust_fit_bus, data_cust_bus_red)
 <img src="README_files/figure-gfm/biplot-private-3.png" alt="Biplot of PCA applied to private customer data." width="960" />
 <p class="caption">
 
-<span id="fig:biplot-private"></span>Figure 5.3: Biplot of PCA applied
+<span id="fig:biplot-private"></span>Figure 5.2: Biplot of PCA applied
 to private customer data.
 </p>
 
@@ -1335,7 +1325,7 @@ to private customer data.
 <img src="README_files/figure-gfm/biplot-business-5.png" alt="Biplot of PCA applied to business customer data." width="960" />
 <p class="caption">
 
-<span id="fig:biplot-business"></span>Figure 5.4: Biplot of PCA applied
+<span id="fig:biplot-business"></span>Figure 5.3: Biplot of PCA applied
 to business customer data.
 </p>
 
@@ -1343,8 +1333,8 @@ to business customer data.
 
 The first two principal components for private and business customers,
 respevtively, are displayed in the biplots displayed in Figure
-<a href="#fig:biplot-private">5.3</a> and Figure
-<a href="#fig:biplot-business">5.4</a>. Principal component analysis
+<a href="#fig:biplot-private">5.2</a> and Figure
+<a href="#fig:biplot-business">5.3</a>. Principal component analysis
 projects the six features into two dimensions for visualization. The
 axes are weighted combinations of the original features, not direct
 measures. The figures also contain the (scaled) loading vectors for the
@@ -1368,7 +1358,7 @@ spending per order.
 <img src="README_files/figure-gfm/fig-clust-private-7.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-private"></span>Figure 5.5: K-Means clusters for
+<span id="fig:fig-clust-private"></span>Figure 5.4: K-Means clusters for
 private customers projected onto the first two principal components.
 </p>
 
@@ -1379,15 +1369,15 @@ private customers projected onto the first two principal components.
 <img src="README_files/figure-gfm/fig-clust-business-9.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-business"></span>Figure 5.6: K-Means clusters
+<span id="fig:fig-clust-business"></span>Figure 5.5: K-Means clusters
 for business customers projected onto the first two principal
 components.
 </p>
 
 </div>
 
-Figures <a href="#fig:fig-clust-private">5.5</a> and
-<a href="#fig:fig-clust-business">5.6</a> show three K-Means clusters
+Figures <a href="#fig:fig-clust-private">5.4</a> and
+<a href="#fig:fig-clust-business">5.5</a> show three K-Means clusters
 for private or business customers, fitted to six standardized numerical
 features: revenue, order count, average revenue per order, recency, time
 since first purchase, and number of product categories purchased. For
@@ -1405,15 +1395,15 @@ statements about customer segment value. Therefore, the identified
 cluster centroids are depicted for each of the original variables
 (scaled between 0 and 1 by the corresponding variable’s minimum and
 maximum value) in Figures
-<a href="#fig:fig-clust-private-detail">5.7</a> and
-<a href="#fig:fig-clust-business-detail">5.8</a>.
+<a href="#fig:fig-clust-private-detail">5.6</a> and
+<a href="#fig:fig-clust-business-detail">5.7</a>.
 
 <div class="figure" style="text-align: center">
 
 <img src="README_files/figure-gfm/fig-clust-private-detail-11.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-private-detail"></span>Figure 5.7: Centroids of
+<span id="fig:fig-clust-private-detail"></span>Figure 5.6: Centroids of
 private customer clusters scaled between 0 and 1.
 </p>
 
@@ -1424,7 +1414,7 @@ private customer clusters scaled between 0 and 1.
 <img src="README_files/figure-gfm/fig-clust-business-detail-13.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-business-detail"></span>Figure 5.8: Centroids of
+<span id="fig:fig-clust-business-detail"></span>Figure 5.7: Centroids of
 business customer clusters scaled between 0 and 1.
 </p>
 
