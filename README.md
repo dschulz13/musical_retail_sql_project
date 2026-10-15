@@ -1309,7 +1309,7 @@ centroid_plot(clust_fit_bus, data_cust_bus_red)
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/biplot-private-3.png" alt="Biplot of PCA applied to private customer data." width="960" />
+<img src="README_files/figure-gfm/biplot-private-1.png" alt="Biplot of PCA applied to private customer data." width="960" />
 <p class="caption">
 
 <span id="fig:biplot-private"></span>Figure 5.2: Biplot of PCA applied
@@ -1320,7 +1320,7 @@ to private customer data.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/biplot-business-5.png" alt="Biplot of PCA applied to business customer data." width="960" />
+<img src="README_files/figure-gfm/biplot-business-3.png" alt="Biplot of PCA applied to business customer data." width="960" />
 <p class="caption">
 
 <span id="fig:biplot-business"></span>Figure 5.3: Biplot of PCA applied
@@ -1353,7 +1353,7 @@ spending per order.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-7.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-5.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-private"></span>Figure 5.4: K-Means clusters for
@@ -1364,7 +1364,7 @@ private customers projected onto the first two principal components.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-9.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-7.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business"></span>Figure 5.5: K-Means clusters
@@ -1398,7 +1398,7 @@ maximum value) in Figures
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-detail-11.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-detail-9.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-private-detail"></span>Figure 5.6: Centroids of
@@ -1409,7 +1409,7 @@ private customer clusters scaled between 0 and 1.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-detail-13.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-detail-11.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
 <span id="fig:fig-clust-business-detail"></span>Figure 5.7: Centroids of
@@ -1745,6 +1745,102 @@ profit or unit sales; margin, units sold, stock availability, and price
 changes should also be considered before making portfolio decisions.
 
 ### 5.3.2 Which products are growing?
+
+**SQL approach for Table <a href="#tab:tab15">5.17</a>**
+
+1.  Join `sales`, `sale_items`, and `products_cleaned` tables on
+    `sale_id` and `product_id`. Keep only entries of products available
+    from the very start of 2024.
+2.  Sum units sold and revenue by product and quarter.
+3.  Create lag variables for units sold and revenue containing the
+    values of the previous year’s quarter.
+4.  Compute change in revenue and units sold with respect to previous
+    year’s quarter and keep only entries for 2025.
+5.  Create an indicator that equals 1 when a change (both in revenue and
+    units sold) from a 2024 quarter to the corresponding 2025 quarter
+    was positive, and 0 otherwise. Sum the indicator by product and keep
+    only those, where the changes for all four quarters were positive.
+6.  Sum up revenue and units sold for the entirety of 2025 for the
+    remaining products and join with further products details. Order
+    (descending) by increase in revenue.
+
+<details>
+
+<summary>
+Show code
+</summary>
+
+``` sql
+# Products growing in each of the four quarters both by
+# revenue generated and units sold with respect to the
+# corresponding quarter of 2024 (Table 5.17)
+WITH join_tab AS (
+SELECT EXTRACT(YEAR FROM sa.sale_timestamp) AS sale_year, EXTRACT(QUARTER FROM sa.sale_timestamp) AS sale_quarter,
+    si.product_id, pr.product_name, pr.category, si.units_sold, si.line_total_eur
+FROM sales AS sa
+INNER JOIN sale_items AS si ON sa.sale_id = si.sale_id
+LEFT JOIN products_cleaned AS pr ON si.product_id = pr.product_id
+WHERE sa.sale_timestamp >= '2024-01-01' AND pr.available_from <= '2024-01-01'),
+sum_tab AS (
+SELECT sale_year, sale_quarter, product_id, product_name, category,
+    SUM(units_sold) AS units_sold, SUM(line_total_eur) AS revenue
+FROM join_tab
+GROUP BY sale_year, sale_quarter, product_id),
+lag_tab AS (
+SELECT sale_year, sale_quarter, product_id, product_name, category,
+    units_sold AS units_sold_2025, LAG(units_sold, 1) OVER (PARTITION BY product_id, sale_quarter ORDER BY sale_year ASC) AS units_sold_2024,
+    revenue AS revenue_2025, LAG(revenue, 1) OVER (PARTITION BY product_id, sale_quarter ORDER BY sale_year ASC) AS revenue_2024
+FROM sum_tab),
+diff_tab AS (
+SELECT sale_year, sale_quarter, product_id, product_name, category,
+    units_sold_2024, units_sold_2025, revenue_2024, revenue_2025,
+    units_sold_2025 - units_sold_2024 AS change_us_abs,
+    100 * (units_sold_2025 - units_sold_2024) / units_sold_2024 AS change_us_rel,
+    revenue_2025 - revenue_2024 AS change_rev_abs,
+    100 * (revenue_2025 - revenue_2024) / revenue_2024 AS change_rev_rel
+FROM lag_tab
+WHERE sale_year = 2025),
+idx_tab AS (
+SELECT sale_year, product_id, product_name, category,
+    SUM(CASE WHEN change_us_abs > 0 AND change_rev_abs > 0 THEN 1 ELSE 0 END) AS idx
+FROM diff_tab
+GROUP BY product_id)
+SELECT it.product_name, it.category,
+    FORMAT(SUM(dt.units_sold_2025), 0) AS units_sold,
+    FORMAT(SUM(dt.change_us_abs), 0) AS increase_units_sold,
+    CONCAT('€', FORMAT(SUM(dt.revenue_2025), 2)) AS revenue,
+    CONCAT('€', FORMAT(SUM(dt.change_rev_abs), 2)) AS increase_revenue
+FROM idx_tab AS it
+INNER JOIN diff_tab AS dt ON it.product_id = dt.product_id
+WHERE it.idx = 4
+GROUP BY it.product_id
+ORDER BY SUM(dt.change_rev_abs) DESC;
+```
+
+</details>
+
+**Results**
+
+| Product | Category | Units sold | Increase (units sold) | Revenue | Increase (revenue) |
+|:---|:---|---:|---:|---:|---:|
+| Windwerk Flute Urban 608 Navy | Brass & Woodwinds | 32 | 13 | €207,984.40 | €84,336.65 |
+| SoundBasics Strings Set Vintage 751 Sunburst | Accessories | 56 | 22 | €59,837.68 | €23,890.16 |
+| LightDeck Effect Machine Mk II 681 Silver | DJ & Lighting | 73 | 14 | €88,449.22 | €22,739.04 |
+| Elbe Piano Keyboard Stand Studio 415 Sunburst | Keyboards & Pianos | 41 | 19 | €9,105.47 | €4,525.37 |
+| LightDeck Turntable Vintage 384 Maple | DJ & Lighting | 31 | 12 | €10,562.54 | €4,506.92 |
+| StompLab Electronic Drum Kit Vintage 404 Blue | Drums & Percussion | 40 | 12 | €8,613.20 | €2,932.06 |
+| Tonraum Stage Piano Performance 978 Blue | Keyboards & Pianos | 48 | 15 | €7,520.58 | €2,928.65 |
+| ClubTone DJ Controller Essential 50 Natural | DJ & Lighting | 34 | 27 | €1,964.66 | €1,597.44 |
+| Mixwerk Audio Interface Deluxe 341 Blue | Studio & Recording | 42 | 10 | €3,709.36 | €1,189.48 |
+| WanderTone Violin Pro 251 Walnut | Strings & Folk | 59 | 25 | €2,300.39 | €1,089.31 |
+| ClubTone DJ Controller Essential 929 Natural | DJ & Lighting | 52 | 20 | €2,785.70 | €1,027.34 |
+| Bergklang Stage Piano Tour 269 Maple | Keyboards & Pianos | 40 | 16 | €2,016.64 | €912.04 |
+| Tonfabrik Mixer Urban 559 Transparent | Studio & Recording | 29 | 19 | €1,377.58 | €900.74 |
+| SoundBasics Strings Set Urban 107 Cherry | Accessories | 70 | 11 | €2,982.09 | €434.66 |
+
+<span id="tab:tab15"></span>Table 5.17: Products with positive growth
+(in simultaneously revenue and units sold) in each quarter of 2025 with
+respect to the corresponding 2024 quarter.
 
 ### 5.3.3 Which products have poor sales?
 
