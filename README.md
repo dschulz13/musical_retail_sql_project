@@ -1,7 +1,7 @@
 Music Retailer Sales SQL Project
 ================
 Dominik Schulz,
-October 14, 2026
+October 15, 2026
 
 - [1 Executive summary](#1-executive-summary)
 - [2 Company & data information](#2-company--data-information)
@@ -146,7 +146,6 @@ topic and business question.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -170,7 +169,6 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2025;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -212,7 +210,6 @@ FROM sales_long_tab;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -271,7 +268,6 @@ sales, indicating a pronounced fourth-quarter peak.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -298,7 +294,6 @@ WHERE EXTRACT(YEAR FROM sale_timestamp) = 2024;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -370,7 +365,6 @@ October, November, and December.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -443,7 +437,6 @@ net-of-shipping basis as the sales totals in Sections 6.1.1–6.1.2.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -484,7 +477,6 @@ FROM sum_tab;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -544,7 +536,6 @@ from **87.63%** to **90.39%**, and was **88.03%** in 2025.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -594,7 +585,6 @@ it does not subtract shipping fees.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -645,7 +635,6 @@ FROM agg_tab2);
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -767,7 +756,6 @@ purchases that would have happened anyway.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -841,7 +829,6 @@ buyers.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -955,7 +942,6 @@ upper tail easier to see.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -1055,7 +1041,6 @@ repeat-purchase intervals are strongly right-skewed.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -1154,45 +1139,281 @@ customer revenue, so no single customer dominates this measure. Note
 that revenue alone does not establish profitability; assessing margins
 or service costs would be needed before calling these customers the most
 profitable. A next step is to segment the broader customer base using
-engagement and spending features.
+engagement and spending features. For this purpose, we employ principal
+component analysis (PCA) and clustering techniques in Python.
+
+<details>
+
+<summary>
+Python code
+</summary>
+
+``` python
+# Import relevant libraries
+import pandas as pd
+from sklearn.preprocessing import StandardScaler as SC
+from sklearn.cluster import KMeans
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+### K-Means wrapper for relevant results
+
+def kmeans(data, n_clusters):
+  
+  # Pipeline
+  kmeans_pipeline = Pipeline([
+    ('scaler', SC(with_std = True, with_mean = True)),
+    ('kmeans', KMeans(n_clusters = 3, random_state = 1, n_init = 100))
+  ])
+  
+  # Data to numpy
+  X = data.to_numpy()
+  
+  # Fit
+  clust_fit = kmeans_pipeline.fit(X)
+  centroids = clust_fit.named_steps['kmeans'].cluster_centers_
+  labels = clust_fit.predict(X)
+  
+  return {'fit_obj': clust_fit, 'centroids': centroids, 'labels': labels}
+
+### PCA wrapper
+
+def pca(data):
+  
+  pca_pipeline = Pipeline([
+    ('scaler', SC(with_mean = True, with_std = True)),
+    ('pca_est', PCA())
+  ])
+  
+  pca_fit = pca_pipeline.fit(data)
+  scores = pca_fit.transform(data)
+  loadings = pca_fit.named_steps['pca_est'].components_
+  
+  return {'fit_obj': pca_fit, 'scores': scores, 'loadings': loadings}
+
+
+
+### PCA for visualization
+
+def pca_clust_plot(clust_fit, pca_fit):
+  
+  scores = pca_fit['scores']
+  centroids = pca_fit['fit_obj'].named_steps['pca_est'].transform(clust_fit['centroids'])
+  
+  pc1 = scores[:, 0]
+  pc2 = scores[:, 1]
+  
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.scatter(pc1, pc2, c = clust_fit['labels'], alpha = 0.2);
+  ax.scatter(centroids[:, 0], centroids[:, 1], c = 'red', marker = '*', s = 120);
+  ax.set_xlabel('Principal component 1');
+  ax.set_ylabel('Principal component 2');
+  ax.set_title('Customer segments');
+  ax.grid(axis = 'x');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Biplot of PCA
+
+def biplot(scores, loadings, s = 4):
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.scatter(scores[:, 0], scores[:, 1], color = '#D3D3D3', alpha = 0.3);
+  
+  nams = ['Revenue', 'Orders', 'Revenue / order', 'Recency', 'Lifetime', 'Categories']
+  
+  dim = loadings.shape[1]
+  
+  for k in range(dim):
+    ax.arrow(0, 0, s * loadings[0, k], s * loadings[1, k], color = 'red', head_width = 0.2);
+    ax.text(s * loadings[0, k] + 0.2, s * loadings[1, k], nams[k], color = 'black');
+  
+  ax.set_xlabel('Principal component 1');
+  ax.set_ylabel('Principal component 2');
+  ax.set_title('First two principal component scores and loadings');
+  ax.grid(axis = 'x');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Centroid plot
+
+def centroid_plot(clust_fit, data):
+  cluster_centers = clust_fit['centroids'].copy()
+
+  cluster_centers_rescaled = clust_fit['fit_obj'].named_steps['scaler'].inverse_transform(cluster_centers)
+
+  cluster_centers_sc = cluster_centers_rescaled.copy()
+  
+  ncol = data.shape[1]
+
+  for i in range(0, ncol):
+    minv = data.iloc[:, i].min()
+    maxv = data.iloc[:, i].max()
+    cluster_centers_sc[:, i] = (cluster_centers_rescaled[:, i] - minv) / (maxv - minv)
+
+
+  cmap = plt.colormaps['viridis']
+  norm = mcolors.Normalize(vmin = 0, vmax = 2)
+  color_0 = cmap(norm(0))
+  color_1 = cmap(norm(1))
+  color_2 = cmap(norm(2))
+
+  x = np.arange(1, ncol + 1, 1)
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.plot(x, cluster_centers_sc[0, :], color = color_0);
+  ax.scatter(x, cluster_centers_sc[0, :], color = color_0);
+  ax.plot(x, cluster_centers_sc[1, :], color = color_1);
+  ax.scatter(x, cluster_centers_sc[1, :], color = color_1);
+  ax.plot(x, cluster_centers_sc[2, :], color = color_2);
+  ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
+  ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
+  ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value");
+  ax.set_title('Detailed centroid comparison');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Application to private customers
+
+data_cust = r.sql_q10_2
+data_cust_private = data_cust[data_cust['customer_type'] == 'private'].copy()
+data_cust_private_red = data_cust_private.drop(['customer_id', 'customer_type', 'perc'], axis = 1)
+
+clust_fit_priv = kmeans(data_cust_private_red, n_clusters = 3)
+pca_fit_priv = pca(data_cust_private_red)
+
+### Application to business customers
+
+data_cust_bus = data_cust[data_cust['customer_type'] == 'business'].copy()
+data_cust_bus_red = data_cust_bus.drop(['customer_id', 'customer_type', 'perc'], axis = 1)
+
+clust_fit_bus = kmeans(data_cust_bus_red, n_clusters = 3)
+pca_fit_bus = pca(data_cust_bus_red)
+```
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-1.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/segmentation-functions-1.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-private"></span>Figure 5.2: K-Means clusters for
+<span id="fig:segmentation-functions"></span>Figure 5.2: K-Means
+clusters for private customers projected onto the first two principal
+components.
+</p>
+
+</div>
+
+``` python
+# Biplots
+biplot(scores = pca_fit_priv['scores'], loadings = pca_fit_priv['loadings'], s = 5)
+biplot(scores = pca_fit_bus['scores'], loadings = pca_fit_bus['loadings'], s = 5)
+
+# Plots of PC1 vs. PC2 with clusters
+pca_clust_plot(clust_fit_priv, pca_fit_priv)
+pca_clust_plot(clust_fit_bus, pca_fit_bus)
+
+# Plots of centroids for original variables
+centroid_plot(clust_fit_priv, data_cust_private_red)
+centroid_plot(clust_fit_bus, data_cust_bus_red)
+```
+
+</details>
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/biplot-private-3.png" alt="Biplot of PCA applied to private customer data." width="960" />
+<p class="caption">
+
+<span id="fig:biplot-private"></span>Figure 5.3: Biplot of PCA applied
+to private customer data.
+</p>
+
+</div>
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/biplot-business-5.png" alt="Biplot of PCA applied to business customer data." width="960" />
+<p class="caption">
+
+<span id="fig:biplot-business"></span>Figure 5.4: Biplot of PCA applied
+to business customer data.
+</p>
+
+</div>
+
+The first two principal components for private and business customers,
+respevtively, are displayed in the biplots displayed in Figure
+<a href="#fig:biplot-private">5.3</a> and Figure
+<a href="#fig:biplot-business">5.4</a>. Principal component analysis
+projects the six features into two dimensions for visualization. The
+axes are weighted combinations of the original features, not direct
+measures. The figures also contain the (scaled) loading vectors for the
+six input variables considered and thus show, how each of them relates
+to each of the first two principal components. In both cases, we can see
+that total revenue, the number of orders, and the number of categories
+purchased items from are strongly correlated with the first principal
+component. So is recency, as a small value (and thus a small number of
+days since the last purchase) leads to a larger first principal
+component. The customer lifetime is only slightly positively related to
+the first component and slightly negatively related to the second
+component. Notably and most strongly correlated with the second
+principal component is the average revenue per order. Hence, we can
+interpret the first principal component as the level of customer
+activity and engagement with the company (in the year 2025), whereas the
+second principal component mainly provides information about the average
+spending per order.
+
+<div class="figure" style="text-align: center">
+
+<img src="README_files/figure-gfm/fig-clust-private-7.png" alt="K-Means clusters for private customers projected onto the first two principal components." width="960" />
+<p class="caption">
+
+<span id="fig:fig-clust-private"></span>Figure 5.5: K-Means clusters for
 private customers projected onto the first two principal components.
 </p>
 
 </div>
 
-<img src="README_files/figure-gfm/unnamed-chunk-24-3.png" alt="" width="768" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
 
-Figure <a href="#fig:fig-clust-private">5.2</a> shows three K-Means
-clusters for private customers, fitted to six standardized numerical
+<img src="README_files/figure-gfm/fig-clust-business-9.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<p class="caption">
+
+<span id="fig:fig-clust-business"></span>Figure 5.6: K-Means clusters
+for business customers projected onto the first two principal
+components.
+</p>
+
+</div>
+
+Figures <a href="#fig:fig-clust-private">5.5</a> and
+<a href="#fig:fig-clust-business">5.6</a> show three K-Means clusters
+for private or business customers, fitted to six standardized numerical
 features: revenue, order count, average revenue per order, recency, time
-since first purchase, and number of product categories purchased.
-Principal component analysis (PCA) projects those features into two
-dimensions for visualization. The axes are weighted combinations of the
-original features, not direct measures of engagement or spending, but
-analyzing the weights of the PCA allows to describe the two axes roughly
-as the level of customer activity with the company and the average
-spending per order.
+since first purchase, and number of product categories purchased. For
+simplicity and easier visualization, we show the clusters (and their
+centroids) on the identified first two principal components.
 
 A tentative interpretation of the clusters is that one group has
 lower-to-moderate order activity and spending, another has higher
 activity but lower-to-moderate spending per order, and a third has
 lower-to-moderate activity but higher spending per order. Members of the
 second and third cluster can be considered to be more valuable than
-those of the first cluster.
+those of the first cluster. A more-in-depth analysis of the clusters of
+private and business customers is, however, required to make definitive
+statements about customer segment value. Therefore, the identified
+cluster centroids are depicted for each of the original variables
+(scaled between 0 and 1 by the corresponding variable’s minimum and
+maximum value) in Figures
+<a href="#fig:fig-clust-private-detail">5.7</a> and
+<a href="#fig:fig-clust-business-detail">5.8</a>.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-private-detail-5.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
+<img src="README_files/figure-gfm/fig-clust-private-detail-11.png" alt="Centroids of private customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-private-detail"></span>Figure 5.3: Centroids of
+<span id="fig:fig-clust-private-detail"></span>Figure 5.7: Centroids of
 private customer clusters scaled between 0 and 1.
 </p>
 
@@ -1200,36 +1421,24 @@ private customer clusters scaled between 0 and 1.
 
 <div class="figure" style="text-align: center">
 
-<img src="README_files/figure-gfm/fig-clust-business-7.png" alt="K-Means clusters for business customers projected onto the first two principal components." width="960" />
+<img src="README_files/figure-gfm/fig-clust-business-detail-13.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
 <p class="caption">
 
-<span id="fig:fig-clust-business"></span>Figure 5.4: K-Means clusters
-for business customers projected onto the first two principal
-components.
-</p>
-
-</div>
-
-Figure <a href="#fig:fig-clust-business">5.4</a> applies the same method
-to business customers. In the two-dimensional projection, the clusters
-appear to separate more clearly along the customer activity component
-than the average spending component. This suggests that the cluster with
-high-activity customers is most valuable among the three clusters.
-
-A more-in-depth analysis of the clusters of private and business
-customers is, however, required to make definitive statements about
-customer segment value.
-
-<div class="figure" style="text-align: center">
-
-<img src="README_files/figure-gfm/fig-clust-business-detail-9.png" alt="Centroids of business customer clusters scaled between 0 and 1." width="960" />
-<p class="caption">
-
-<span id="fig:fig-clust-business-detail"></span>Figure 5.5: Centroids of
+<span id="fig:fig-clust-business-detail"></span>Figure 5.8: Centroids of
 business customer clusters scaled between 0 and 1.
 </p>
 
 </div>
+
+For private customers, there is a a segment (depicted in green) that
+produces the most total revenue, even though they clearly spend less
+money per order than another of the customer groups. As is observable,
+revenue driving group is the most engaged with the company, as it has
+the longest customer lifetime, the smallest recency and the most product
+category interactions.
+
+For business customers, the group depicted in purple produces the best
+key numbers throughout (including the smallest recency).
 
 ### 5.2.5 Are customers becoming more or less valuable?
 
@@ -1246,7 +1455,6 @@ business customer clusters scaled between 0 and 1.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -1302,7 +1510,6 @@ become very large when a customer’s 2024 revenue was small.
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -1341,7 +1548,6 @@ ORDER BY sale_year DESC, ranking ASC;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
@@ -1380,7 +1586,6 @@ ORDER BY sale_year DESC, ranking ASC;
 <details>
 
 <summary>
-
 Show code
 </summary>
 
