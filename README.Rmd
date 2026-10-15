@@ -1049,7 +1049,150 @@ ORDER BY rt.revenue DESC;
 
 `r start_code("Python code")`
 
-```{python segmentation-functions, echo = TRUE, eval = TRUE}
+```{python segmentation-functions, echo = TRUE, eval = FALSE, include = TRUE}
+# Import relevant libraries
+import pandas as pd
+from sklearn.preprocessing import StandardScaler as SC
+from sklearn.cluster import KMeans
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+### K-Means wrapper for relevant results
+
+def kmeans(data, n_clusters):
+  
+  # Pipeline
+  kmeans_pipeline = Pipeline([
+    ('scaler', SC(with_std = True, with_mean = True)),
+    ('kmeans', KMeans(n_clusters = 3, random_state = 1, n_init = 100))
+  ])
+  
+  # Data to numpy
+  X = data.to_numpy()
+  
+  # Fit
+  clust_fit = kmeans_pipeline.fit(X)
+  centroids = clust_fit.named_steps['kmeans'].cluster_centers_
+  labels = clust_fit.predict(X)
+  
+  return {'fit_obj': clust_fit, 'centroids': centroids, 'labels': labels}
+
+### PCA wrapper
+
+def pca(data):
+  
+  pca_pipeline = Pipeline([
+    ('scaler', SC(with_mean = True, with_std = True)),
+    ('pca_est', PCA())
+  ])
+  
+  pca_fit = pca_pipeline.fit(data)
+  scores = pca_fit.transform(data)
+  loadings = pca_fit.named_steps['pca_est'].components_
+  
+  return {'fit_obj': pca_fit, 'scores': scores, 'loadings': loadings}
+
+
+
+### PCA for visualization
+
+def pca_clust_plot(clust_fit, pca_fit):
+  
+  scores = pca_fit['scores']
+  centroids = pca_fit['fit_obj'].named_steps['pca_est'].transform(clust_fit['centroids'])
+  
+  pc1 = scores[:, 0]
+  pc2 = scores[:, 1]
+  
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.scatter(pc1, pc2, c = clust_fit['labels'], alpha = 0.2);
+  ax.scatter(centroids[:, 0], centroids[:, 1], c = 'red', marker = '*', s = 120);
+  ax.set_xlabel('Principal component 1');
+  ax.set_ylabel('Principal component 2');
+  ax.set_title('Customer segments');
+  ax.grid(axis = 'x');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Biplot of PCA
+
+def biplot(scores, loadings, s = 4):
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.scatter(scores[:, 0], scores[:, 1], color = '#D3D3D3', alpha = 0.3);
+  
+  nams = ['Revenue', 'Orders', 'Revenue / order', 'Recency', 'Lifetime', 'Categories']
+  
+  dim = loadings.shape[1]
+  
+  for k in range(dim):
+    ax.arrow(0, 0, s * loadings[0, k], s * loadings[1, k], color = 'red', head_width = 0.2);
+    ax.text(s * loadings[0, k] + 0.2, s * loadings[1, k], nams[k], color = 'black');
+  
+  ax.set_xlabel('Principal component 1');
+  ax.set_ylabel('Principal component 2');
+  ax.set_title('First two principal component scores and loadings');
+  ax.grid(axis = 'x');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Centroid plot
+
+def centroid_plot(clust_fit, data):
+  cluster_centers = clust_fit['centroids'].copy()
+
+  cluster_centers_rescaled = clust_fit['fit_obj'].named_steps['scaler'].inverse_transform(cluster_centers)
+
+  cluster_centers_sc = cluster_centers_rescaled.copy()
+  
+  ncol = data.shape[1]
+
+  for i in range(0, ncol):
+    minv = data.iloc[:, i].min()
+    maxv = data.iloc[:, i].max()
+    cluster_centers_sc[:, i] = (cluster_centers_rescaled[:, i] - minv) / (maxv - minv)
+
+
+  cmap = plt.colormaps['viridis']
+  norm = mcolors.Normalize(vmin = 0, vmax = 2)
+  color_0 = cmap(norm(0))
+  color_1 = cmap(norm(1))
+  color_2 = cmap(norm(2))
+
+  x = np.arange(1, ncol + 1, 1)
+  fig, ax = plt.subplots(1, 1, figsize = (10, 6))
+  ax.plot(x, cluster_centers_sc[0, :], color = color_0);
+  ax.scatter(x, cluster_centers_sc[0, :], color = color_0);
+  ax.plot(x, cluster_centers_sc[1, :], color = color_1);
+  ax.scatter(x, cluster_centers_sc[1, :], color = color_1);
+  ax.plot(x, cluster_centers_sc[2, :], color = color_2);
+  ax.scatter(x, cluster_centers_sc[2, :], color = color_2);
+  ax.set_xticks(x, labels = ['Revenue', 'Orders', 'Avg revenue', 'Recency', 'Lifetime', 'Categories'], rotation = 30);
+  ax.set_ylabel("Centroid position between variable's smallest (0) and largest (1) value");
+  ax.set_title('Detailed centroid comparison');
+  ax.grid(axis = 'y');
+  ax.set_axisbelow(True);
+
+### Application to private customers
+
+data_cust = r.sql_q10_2
+data_cust_private = data_cust[data_cust['customer_type'] == 'private'].copy()
+data_cust_private_red = data_cust_private.drop(['customer_id', 'customer_type', 'perc'], axis = 1)
+
+clust_fit_priv = kmeans(data_cust_private_red, n_clusters = 3)
+pca_fit_priv = pca(data_cust_private_red)
+
+### Application to business customers
+
+data_cust_bus = data_cust[data_cust['customer_type'] == 'business'].copy()
+data_cust_bus_red = data_cust_bus.drop(['customer_id', 'customer_type', 'perc'], axis = 1)
+
+clust_fit_bus = kmeans(data_cust_bus_red, n_clusters = 3)
+pca_fit_bus = pca(data_cust_bus_red)
+```
+
+```{python, echo = FALSE, eval = TRUE, include = FALSE}
 # Import relevant libraries
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SC

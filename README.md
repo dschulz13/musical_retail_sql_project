@@ -1291,8 +1291,6 @@ clust_fit_bus = kmeans(data_cust_bus_red, n_clusters = 3)
 pca_fit_bus = pca(data_cust_bus_red)
 ```
 
-<img src="README_files/figure-gfm/segmentation-functions-1.png" alt="" width="960" style="display: block; margin: auto;" />
-
 ``` python
 # Biplots
 biplot(scores = pca_fit_priv['scores'], loadings = pca_fit_priv['loadings'], s = 5)
