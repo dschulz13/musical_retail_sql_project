@@ -119,7 +119,7 @@ section.footnotes {
 <div class="body">
 <h1 id="music-retailer-sales-sql-project">Music Retailer Sales SQL Project</h1>
 <p>Dominik Schulz,
-October 15, 2026</p>
+October 16, 2026</p>
 <ul>
 <li><a href="#1-executive-summary">1 Executive summary</a></li>
 <li><a href="#2-company--data-information">2 Company &amp; data information</a></li>
@@ -449,8 +449,14 @@ WHERE year_numb = 2025
 ORDER BY month_numb ASC)
 SELECT month_name, CONCAT('€', FORMAT(total_sales_2024, 2)) AS total_sales_2024,
     CONCAT('€', FORMAT(total_sales_2025, 2)) AS total_sales_2025,
-    CONCAT('€', FORMAT(total_sales_2025 - total_sales_2024, 2)) AS abs_change,
-    CONCAT(ROUND(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%') AS rel_change
+    CASE
+    WHEN total_sales_2025 - total_sales_2024 &gt;= 0 THEN CONCAT('+€', FORMAT(total_sales_2025 - total_sales_2024, 2))
+    WHEN total_sales_2025 - total_sales_2024 &lt; 0 THEN CONCAT('-€', FORMAT(ABS(total_sales_2025 - total_sales_2024), 2))
+  END AS abs_change,
+  CASE
+    WHEN 100 * (total_sales_2025 - total_sales_2024) / total_sales_2024 &gt;= 0 THEN CONCAT('+', FORMAT(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%')
+    WHEN 100 * (total_sales_2025 - total_sales_2024) / total_sales_2024 &lt; 0 THEN CONCAT('-', FORMAT(ABS(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024), 2), '%')
+  END AS rel_change
 FROM comp_tab;
 </code></pre>
 </details>
@@ -473,85 +479,85 @@ FROM comp_tab;
 <td align="left">January</td>
 <td align="right">€10,662,098.53</td>
 <td align="right">€11,634,671.43</td>
-<td align="right">€972,572.90</td>
-<td align="right">9.12%</td>
+<td align="right">+€972,572.90</td>
+<td align="right">+9.12%</td>
 </tr>
 <tr>
 <td align="left">February</td>
 <td align="right">€12,509,612.61</td>
 <td align="right">€13,224,547.24</td>
-<td align="right">€714,934.63</td>
-<td align="right">5.72%</td>
+<td align="right">+€714,934.63</td>
+<td align="right">+5.72%</td>
 </tr>
 <tr>
 <td align="left">March</td>
 <td align="right">€12,716,601.72</td>
 <td align="right">€14,406,142.15</td>
-<td align="right">€1,689,540.43</td>
-<td align="right">13.29%</td>
+<td align="right">+€1,689,540.43</td>
+<td align="right">+13.29%</td>
 </tr>
 <tr>
 <td align="left">April</td>
 <td align="right">€12,951,284.01</td>
 <td align="right">€14,108,479.68</td>
-<td align="right">€1,157,195.67</td>
-<td align="right">8.93%</td>
+<td align="right">+€1,157,195.67</td>
+<td align="right">+8.93%</td>
 </tr>
 <tr>
 <td align="left">May</td>
 <td align="right">€13,269,831.06</td>
 <td align="right">€14,687,588.63</td>
-<td align="right">€1,417,757.57</td>
-<td align="right">10.68%</td>
+<td align="right">+€1,417,757.57</td>
+<td align="right">+10.68%</td>
 </tr>
 <tr>
 <td align="left">June</td>
 <td align="right">€12,281,043.47</td>
 <td align="right">€13,669,492.17</td>
-<td align="right">€1,388,448.70</td>
-<td align="right">11.31%</td>
+<td align="right">+€1,388,448.70</td>
+<td align="right">+11.31%</td>
 </tr>
 <tr>
 <td align="left">July</td>
 <td align="right">€11,909,782.25</td>
 <td align="right">€13,437,017.96</td>
-<td align="right">€1,527,235.71</td>
-<td align="right">12.82%</td>
+<td align="right">+€1,527,235.71</td>
+<td align="right">+12.82%</td>
 </tr>
 <tr>
 <td align="left">August</td>
 <td align="right">€12,686,576.47</td>
 <td align="right">€14,455,434.75</td>
-<td align="right">€1,768,858.28</td>
-<td align="right">13.94%</td>
+<td align="right">+€1,768,858.28</td>
+<td align="right">+13.94%</td>
 </tr>
 <tr>
 <td align="left">September</td>
 <td align="right">€13,107,929.40</td>
 <td align="right">€15,025,834.64</td>
-<td align="right">€1,917,905.24</td>
-<td align="right">14.63%</td>
+<td align="right">+€1,917,905.24</td>
+<td align="right">+14.63%</td>
 </tr>
 <tr>
 <td align="left">October</td>
 <td align="right">€13,674,035.81</td>
 <td align="right">€15,862,459.29</td>
-<td align="right">€2,188,423.48</td>
-<td align="right">16.00%</td>
+<td align="right">+€2,188,423.48</td>
+<td align="right">+16.00%</td>
 </tr>
 <tr>
 <td align="left">November</td>
 <td align="right">€17,877,541.31</td>
 <td align="right">€20,654,304.18</td>
-<td align="right">€2,776,762.87</td>
-<td align="right">15.53%</td>
+<td align="right">+€2,776,762.87</td>
+<td align="right">+15.53%</td>
 </tr>
 <tr>
 <td align="left">December</td>
 <td align="right">€17,205,329.18</td>
 <td align="right">€19,996,241.47</td>
-<td align="right">€2,790,912.29</td>
-<td align="right">16.22%</td>
+<td align="right">+€2,790,912.29</td>
+<td align="right">+16.22%</td>
 </tr>
 </tbody>
 </table>
@@ -588,9 +594,19 @@ SELECT year_numb, month_numb, month_name, LAG(revenue, 3) OVER (PARTITION BY mon
     LAG(revenue, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2024,
     revenue AS rev_2025
 FROM agg_tab)
-SELECT month_name, CONCAT(ROUND(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%') AS change_22_23,
-    CONCAT(ROUND(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%') AS change_23_24,
-    CONCAT(ROUND(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%') AS change_24_25
+SELECT month_name,
+  CASE
+    WHEN 100 * (rev_2023 - rev_2022) / rev_2022 &gt;= 0 THEN CONCAT('+', FORMAT(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%')
+    WHEN 100 * (rev_2023 - rev_2022) / rev_2022 &lt; 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2023 - rev_2022) / rev_2022), 2), '%')
+  END AS change_22_23,
+  CASE
+    WHEN 100 * (rev_2024 - rev_2023) / rev_2023 &gt;= 0 THEN CONCAT('+', FORMAT(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%')
+    WHEN 100 * (rev_2024 - rev_2023) / rev_2023 &lt; 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2024 - rev_2023) / rev_2023), 2), '%')
+  END AS change_23_24,
+  CASE
+    WHEN 100 * (rev_2025 - rev_2024) / rev_2024 &gt;= 0 THEN CONCAT('+', FORMAT(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%')
+    WHEN 100 * (rev_2025 - rev_2024) / rev_2024 &lt; 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2025 - rev_2024) / rev_2024), 2), '%')
+  END AS change_24_25
 FROM lag_tab
 WHERE year_numb = 2025
 ORDER BY month_numb;
@@ -609,75 +625,75 @@ ORDER BY month_numb;
 <tbody>
 <tr>
 <td align="left">January</td>
-<td align="right">5.40%</td>
-<td align="right">9.52%</td>
-<td align="right">9.11%</td>
+<td align="right">+5.40%</td>
+<td align="right">+9.52%</td>
+<td align="right">+9.11%</td>
 </tr>
 <tr>
 <td align="left">February</td>
-<td align="right">9.71%</td>
-<td align="right">10.35%</td>
-<td align="right">5.72%</td>
+<td align="right">+9.71%</td>
+<td align="right">+10.35%</td>
+<td align="right">+5.72%</td>
 </tr>
 <tr>
 <td align="left">March</td>
-<td align="right">11.48%</td>
-<td align="right">5.01%</td>
-<td align="right">13.27%</td>
+<td align="right">+11.48%</td>
+<td align="right">+5.01%</td>
+<td align="right">+13.27%</td>
 </tr>
 <tr>
 <td align="left">April</td>
-<td align="right">6.70%</td>
-<td align="right">7.06%</td>
-<td align="right">8.93%</td>
+<td align="right">+6.70%</td>
+<td align="right">+7.06%</td>
+<td align="right">+8.93%</td>
 </tr>
 <tr>
 <td align="left">May</td>
-<td align="right">6.31%</td>
-<td align="right">8.90%</td>
-<td align="right">10.67%</td>
+<td align="right">+6.31%</td>
+<td align="right">+8.90%</td>
+<td align="right">+10.67%</td>
 </tr>
 <tr>
 <td align="left">June</td>
-<td align="right">6.63%</td>
-<td align="right">9.29%</td>
-<td align="right">11.30%</td>
+<td align="right">+6.63%</td>
+<td align="right">+9.29%</td>
+<td align="right">+11.30%</td>
 </tr>
 <tr>
 <td align="left">July</td>
-<td align="right">6.42%</td>
-<td align="right">10.13%</td>
-<td align="right">12.81%</td>
+<td align="right">+6.42%</td>
+<td align="right">+10.13%</td>
+<td align="right">+12.81%</td>
 </tr>
 <tr>
 <td align="left">August</td>
-<td align="right">7.20%</td>
-<td align="right">11.48%</td>
-<td align="right">13.94%</td>
+<td align="right">+7.20%</td>
+<td align="right">+11.48%</td>
+<td align="right">+13.94%</td>
 </tr>
 <tr>
 <td align="left">September</td>
-<td align="right">7.87%</td>
-<td align="right">7.08%</td>
-<td align="right">14.62%</td>
+<td align="right">+7.87%</td>
+<td align="right">+7.08%</td>
+<td align="right">+14.62%</td>
 </tr>
 <tr>
 <td align="left">October</td>
-<td align="right">8.60%</td>
-<td align="right">10.25%</td>
-<td align="right">15.99%</td>
+<td align="right">+8.60%</td>
+<td align="right">+10.25%</td>
+<td align="right">+15.99%</td>
 </tr>
 <tr>
 <td align="left">November</td>
-<td align="right">9.28%</td>
-<td align="right">9.11%</td>
-<td align="right">15.52%</td>
+<td align="right">+9.28%</td>
+<td align="right">+9.11%</td>
+<td align="right">+15.52%</td>
 </tr>
 <tr>
 <td align="left">December</td>
-<td align="right">6.53%</td>
-<td align="right">9.42%</td>
-<td align="right">16.21%</td>
+<td align="right">+6.53%</td>
+<td align="right">+9.42%</td>
+<td align="right">+16.21%</td>
 </tr>
 </tbody>
 </table>
@@ -2057,7 +2073,15 @@ change_tab AS (
 SELECT customer_id, revenue2024, revenue2025, revenue2025 - revenue2024 AS revenue_shift, 100 * (revenue2025 - revenue2024) / revenue2024 AS revenue_change_rel
 FROM lag_tab
 WHERE sale_year = 2025 AND revenue2024 IS NOT NULL)
-SELECT CONCAT('€', FORMAT(AVG(revenue_shift), 2)) AS mean_abs_change, CONCAT(FORMAT(AVG(revenue_change_rel), 2), '%') AS mean_rel_change
+SELECT
+  CASE
+    WHEN AVG(revenue_shift) &gt;= 0 THEN CONCAT('+€', FORMAT(AVG(revenue_shift), 2))
+    WHEN AVG(revenue_shift) &lt; 0 THEN CONCAT('-€', FORMAT(ABS(AVG(revenue_shift)), 2))
+  END AS mean_abs_change, 
+  CASE
+    WHEN AVG(revenue_change_rel) &gt;= 0 THEN CONCAT('+', FORMAT(AVG(revenue_change_rel), 2), '%')
+    WHEN AVG(revenue_change_rel) &lt; 0 THEN CONCAT('-', FORMAT(ABS(AVG(revenue_change_rel)), 2), '%')
+  END AS mean_rel_change
 FROM change_tab;
 </code></pre>
 </details>
@@ -2071,8 +2095,8 @@ FROM change_tab;
 </thead>
 <tbody>
 <tr>
-<td align="right">€-22.46</td>
-<td align="right">436.42%</td>
+<td align="right">-€22.46</td>
+<td align="right">+436.42%</td>
 </tr>
 </tbody>
 </table>
@@ -2991,7 +3015,7 @@ SELECT it.product_name, it.category,
     FORMAT(SUM(dt.units_sold_2025), 0) AS units_sold,
     FORMAT(SUM(dt.change_us_abs), 0) AS increase_units_sold,
     CONCAT('€', FORMAT(SUM(dt.revenue_2025), 2)) AS revenue,
-    CONCAT('€', FORMAT(SUM(dt.change_rev_abs), 2)) AS increase_revenue
+    CONCAT('+€', FORMAT(SUM(dt.change_rev_abs), 2)) AS increase_revenue
 FROM idx_tab AS it
 INNER JOIN diff_tab AS dt ON it.product_id = dt.product_id
 WHERE it.idx = 4
@@ -3018,7 +3042,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">32</td>
 <td align="right">13</td>
 <td align="right">€207,984.40</td>
-<td align="right">€84,336.65</td>
+<td align="right">+€84,336.65</td>
 </tr>
 <tr>
 <td align="left">SoundBasics Strings Set Vintage 751 Sunburst</td>
@@ -3026,7 +3050,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">56</td>
 <td align="right">22</td>
 <td align="right">€59,837.68</td>
-<td align="right">€23,890.16</td>
+<td align="right">+€23,890.16</td>
 </tr>
 <tr>
 <td align="left">LightDeck Effect Machine Mk II 681 Silver</td>
@@ -3034,7 +3058,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">73</td>
 <td align="right">14</td>
 <td align="right">€88,449.22</td>
-<td align="right">€22,739.04</td>
+<td align="right">+€22,739.04</td>
 </tr>
 <tr>
 <td align="left">Elbe Piano Keyboard Stand Studio 415 Sunburst</td>
@@ -3042,7 +3066,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">41</td>
 <td align="right">19</td>
 <td align="right">€9,105.47</td>
-<td align="right">€4,525.37</td>
+<td align="right">+€4,525.37</td>
 </tr>
 <tr>
 <td align="left">LightDeck Turntable Vintage 384 Maple</td>
@@ -3050,7 +3074,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">31</td>
 <td align="right">12</td>
 <td align="right">€10,562.54</td>
-<td align="right">€4,506.92</td>
+<td align="right">+€4,506.92</td>
 </tr>
 <tr>
 <td align="left">StompLab Electronic Drum Kit Vintage 404 Blue</td>
@@ -3058,7 +3082,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">40</td>
 <td align="right">12</td>
 <td align="right">€8,613.20</td>
-<td align="right">€2,932.06</td>
+<td align="right">+€2,932.06</td>
 </tr>
 <tr>
 <td align="left">Tonraum Stage Piano Performance 978 Blue</td>
@@ -3066,7 +3090,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">48</td>
 <td align="right">15</td>
 <td align="right">€7,520.58</td>
-<td align="right">€2,928.65</td>
+<td align="right">+€2,928.65</td>
 </tr>
 <tr>
 <td align="left">ClubTone DJ Controller Essential 50 Natural</td>
@@ -3074,7 +3098,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">34</td>
 <td align="right">27</td>
 <td align="right">€1,964.66</td>
-<td align="right">€1,597.44</td>
+<td align="right">+€1,597.44</td>
 </tr>
 <tr>
 <td align="left">Mixwerk Audio Interface Deluxe 341 Blue</td>
@@ -3082,7 +3106,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">42</td>
 <td align="right">10</td>
 <td align="right">€3,709.36</td>
-<td align="right">€1,189.48</td>
+<td align="right">+€1,189.48</td>
 </tr>
 <tr>
 <td align="left">WanderTone Violin Pro 251 Walnut</td>
@@ -3090,7 +3114,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">59</td>
 <td align="right">25</td>
 <td align="right">€2,300.39</td>
-<td align="right">€1,089.31</td>
+<td align="right">+€1,089.31</td>
 </tr>
 <tr>
 <td align="left">ClubTone DJ Controller Essential 929 Natural</td>
@@ -3098,7 +3122,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">52</td>
 <td align="right">20</td>
 <td align="right">€2,785.70</td>
-<td align="right">€1,027.34</td>
+<td align="right">+€1,027.34</td>
 </tr>
 <tr>
 <td align="left">Bergklang Stage Piano Tour 269 Maple</td>
@@ -3106,7 +3130,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">40</td>
 <td align="right">16</td>
 <td align="right">€2,016.64</td>
-<td align="right">€912.04</td>
+<td align="right">+€912.04</td>
 </tr>
 <tr>
 <td align="left">Tonfabrik Mixer Urban 559 Transparent</td>
@@ -3114,7 +3138,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">29</td>
 <td align="right">19</td>
 <td align="right">€1,377.58</td>
-<td align="right">€900.74</td>
+<td align="right">+€900.74</td>
 </tr>
 <tr>
 <td align="left">SoundBasics Strings Set Urban 107 Cherry</td>
@@ -3122,7 +3146,7 @@ ORDER BY SUM(dt.change_rev_abs) DESC;
 <td align="right">70</td>
 <td align="right">11</td>
 <td align="right">€2,982.09</td>
-<td align="right">€434.66</td>
+<td align="right">+€434.66</td>
 </tr>
 </tbody>
 </table>
@@ -3694,6 +3718,1409 @@ LIMIT 20;
 revenue generated) discontinued in 2025.</p>
 <h2 id="5-4-pricing">5.4 Pricing</h2>
 <h3 id="5-4-1-which-products-experienced-major-price-changes">5.4.1 Which products experienced major price changes?</h3>
+<p><strong>SQL approach for Table <a href="#tab:tab20">5.22</a></strong></p>
+<details>
+<summary>
+Show code
+</summary>
+<pre><code class="language-sql">WITH join_tab AS (
+SELECT pr.product_id, pr.product_name, pr.category, pr.available_from, pp.offered_price_eur, pp.introduced_at
+FROM products_cleaned AS pr
+INNER JOIN product_prices AS pp ON pr.product_id = pp.product_id
+WHERE EXTRACT(YEAR FROM available_from) &lt; 2025),
+lag_tab AS (
+SELECT product_id, product_name, category, available_from, offered_price_eur, introduced_at, LAG(offered_price_eur, 1) OVER (PARTITION BY product_id ORDER BY introduced_at ASC) AS offered_price_eur_lag1
+FROM join_tab),
+fin_tab AS (
+SELECT product_id, product_name, category, introduced_at, offered_price_eur_lag1 AS previous_price, offered_price_eur AS new_price,
+    offered_price_eur - offered_price_eur_lag1 AS price_change,
+    ROUND(100 * (offered_price_eur - offered_price_eur_lag1) / offered_price_eur_lag1, 2) AS rel_price_change
+FROM lag_tab
+WHERE EXTRACT(YEAR FROM introduced_at) = 2025
+ORDER BY product_id ASC, introduced_at ASC)
+SELECT product_name, category, DATE_FORMAT(introduced_at, '%Y-%m-%d') AS introduced_at,
+    CONCAT('€', FORMAT(previous_price, 2)) AS previous_price,
+    CONCAT('€', FORMAT(new_price, 2)) AS new_price,
+    CASE
+        WHEN price_change &gt;= 0 THEN CONCAT('+€', FORMAT(price_change, 2))
+        WHEN price_change &lt; 0 THEN CONCAT('-€', FORMAT(ABS(price_change), 2))
+    END AS price_change_abs,
+    CASE
+        WHEN rel_price_change &gt;= 0 THEN CONCAT('+', FORMAT(rel_price_change, 2), '%')
+        WHEN rel_price_change &lt; 0 THEN CONCAT('-', FORMAT(ABS(rel_price_change), 2), '%')
+    END AS rel_price_change
+FROM fin_tab
+WHERE rel_price_change &gt;= 12 OR rel_price_change &lt;= -9
+ORDER BY price_change DESC;
+</code></pre>
+</details>
+<table>
+<thead>
+<tr>
+<th align="left">Product</th>
+<th align="left">Category</th>
+<th align="right">New price date</th>
+<th align="right">Old price</th>
+<th align="right">New price</th>
+<th align="right">Price change (abs.)</th>
+<th align="right">Price change (rel.)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Atemklang Trumpet Pro 61 Cherry</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-05-01</td>
+<td align="right">€7,002.58</td>
+<td align="right">€7,842.89</td>
+<td align="right">+€840.31</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Altona Acoustic Guitar Advanced 464 Black</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-09-01</td>
+<td align="right">€6,212.54</td>
+<td align="right">€6,958.05</td>
+<td align="right">+€745.51</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klanghorn Flute Mk II 226 Transparent</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-11-01</td>
+<td align="right">€6,052.10</td>
+<td align="right">€6,778.36</td>
+<td align="right">+€726.26</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Atemklang Saxophone Vintage 910 Cherry</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-08-01</td>
+<td align="right">€5,689.64</td>
+<td align="right">€6,372.40</td>
+<td align="right">+€682.76</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Eichenberg Acoustic Guitar Prime 668 Green</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-02-01</td>
+<td align="right">€5,667.37</td>
+<td align="right">€6,347.45</td>
+<td align="right">+€680.08</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Livehaus Wireless System Prime 954 Black</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-03-01</td>
+<td align="right">€5,129.27</td>
+<td align="right">€5,744.79</td>
+<td align="right">+€615.52</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Eichenberg Ukulele Studio 297 Cherry</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-07-01</td>
+<td align="right">€4,770.68</td>
+<td align="right">€5,343.17</td>
+<td align="right">+€572.49</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Velvet Oak Bass Guitar Mk II 822 Walnut</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-11-01</td>
+<td align="right">€4,659.62</td>
+<td align="right">€5,218.78</td>
+<td align="right">+€559.16</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonraum Stage Piano Advanced 675 Black</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-03-01</td>
+<td align="right">€4,474.99</td>
+<td align="right">€5,011.99</td>
+<td align="right">+€537.00</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">SignalCraft Microphone Select 263 Maple</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-02-01</td>
+<td align="right">€4,066.52</td>
+<td align="right">€4,554.50</td>
+<td align="right">+€487.98</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Alpenklang Violin Urban 234 Walnut</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-10-01</td>
+<td align="right">€3,754.62</td>
+<td align="right">€4,205.17</td>
+<td align="right">+€450.55</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Bogen Drum Snare Drum Stage 43 Walnut</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-08-01</td>
+<td align="right">€3,291.71</td>
+<td align="right">€3,686.71</td>
+<td align="right">+€395.00</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Bläserhaus Saxophone Tour 403 Black</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-10-01</td>
+<td align="right">€3,195.46</td>
+<td align="right">€3,578.91</td>
+<td align="right">+€383.45</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Auralab Microphone Studio 965 Walnut</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-11-01</td>
+<td align="right">€2,913.84</td>
+<td align="right">€3,263.50</td>
+<td align="right">+€349.66</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Bogen Drum Snare Drum Mk II 212 Green</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-01-01</td>
+<td align="right">€2,773.32</td>
+<td align="right">€3,106.12</td>
+<td align="right">+€332.80</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">WanderTone Folk Guitar Classic 508 Sunburst</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-07-01</td>
+<td align="right">€2,228.71</td>
+<td align="right">€2,496.15</td>
+<td align="right">+€267.44</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">BeatHaus Percussion Pro 296 Green</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-06-01</td>
+<td align="right">€2,136.87</td>
+<td align="right">€2,393.29</td>
+<td align="right">+€256.42</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">StageCore Power Amplifier Pro 424 Transparent</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-08-01</td>
+<td align="right">€1,934.83</td>
+<td align="right">€2,167.01</td>
+<td align="right">+€232.18</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Westwerk Electric Guitar Compact 310 Blue</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-01-01</td>
+<td align="right">€1,841.92</td>
+<td align="right">€2,062.95</td>
+<td align="right">+€221.03</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ProSoundline Power Amplifier Prime 45 Walnut</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-03-01</td>
+<td align="right">€1,440.56</td>
+<td align="right">€1,613.43</td>
+<td align="right">+€172.87</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klangwerk Electronic Drum Kit Tour 342 Red</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-09-01</td>
+<td align="right">€1,407.91</td>
+<td align="right">€1,576.86</td>
+<td align="right">+€168.95</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Atemklang Clarinet Studio 836 Silver</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-08-01</td>
+<td align="right">€1,365.03</td>
+<td align="right">€1,528.84</td>
+<td align="right">+€163.81</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Harper Tone Electric Guitar Studio 826 Natural</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-07-01</td>
+<td align="right">€1,352.92</td>
+<td align="right">€1,515.27</td>
+<td align="right">+€162.35</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klangwerk Electronic Drum Kit Tour 342 Red</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-01-01</td>
+<td align="right">€1,257.06</td>
+<td align="right">€1,407.91</td>
+<td align="right">+€150.85</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Eichenberg Electric Guitar Performance 639 White</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-02-01</td>
+<td align="right">€1,216.76</td>
+<td align="right">€1,362.77</td>
+<td align="right">+€146.01</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Silverline Ukulele Prime 587 Vintage White</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-02-01</td>
+<td align="right">€1,208.17</td>
+<td align="right">€1,353.15</td>
+<td align="right">+€144.98</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Venue Audio Active Speaker Stage 53 White</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-05-01</td>
+<td align="right">€1,185.01</td>
+<td align="right">€1,327.22</td>
+<td align="right">+€142.21</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Nordlicht Synthesizer Vintage 809 Navy</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-08-01</td>
+<td align="right">€1,180.27</td>
+<td align="right">€1,321.90</td>
+<td align="right">+€141.63</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">BeatHaus Cymbal Prime 419 Black</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-01-01</td>
+<td align="right">€1,100.32</td>
+<td align="right">€1,232.36</td>
+<td align="right">+€132.04</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Nordlicht MIDI Keyboard Deluxe 518 Black</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-11-01</td>
+<td align="right">€1,070.71</td>
+<td align="right">€1,199.20</td>
+<td align="right">+€128.49</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ClubTone DJ Controller Advanced 384 Sunburst</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-08-01</td>
+<td align="right">€979.95</td>
+<td align="right">€1,097.54</td>
+<td align="right">+€117.59</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Blech &amp; Holz Trombone Performance 838 Maple</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-11-01</td>
+<td align="right">€887.73</td>
+<td align="right">€994.26</td>
+<td align="right">+€106.53</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">StageBeam Turntable Stage 700 Green</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-11-01</td>
+<td align="right">€852.08</td>
+<td align="right">€954.33</td>
+<td align="right">+€102.25</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ClubTone Turntable Select 24 Green</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-08-01</td>
+<td align="right">€846.25</td>
+<td align="right">€947.80</td>
+<td align="right">+€101.55</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Eichenberg Bass Guitar Select 427 Maple</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-03-01</td>
+<td align="right">€813.60</td>
+<td align="right">€911.23</td>
+<td align="right">+€97.63</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Mixwerk Headphones Pro 652 Maple</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-07-01</td>
+<td align="right">€734.34</td>
+<td align="right">€822.46</td>
+<td align="right">+€88.12</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Eichenberg Acoustic Guitar Vintage 687 Natural</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-09-01</td>
+<td align="right">€668.21</td>
+<td align="right">€748.39</td>
+<td align="right">+€80.18</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Holz &amp; Draht Cello Pro 559 White</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-02-01</td>
+<td align="right">€663.43</td>
+<td align="right">€743.04</td>
+<td align="right">+€79.61</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Elbe Piano Stage Piano Mk II 939 Green</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-10-01</td>
+<td align="right">€627.93</td>
+<td align="right">€703.28</td>
+<td align="right">+€75.35</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">CableCraft Guitar Case Mk II 259 Sunburst</td>
+<td align="left">Accessories</td>
+<td align="right">2025-08-01</td>
+<td align="right">€597.09</td>
+<td align="right">€668.74</td>
+<td align="right">+€71.65</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Studiohaus Mixer Stage 34 Walnut</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-09-01</td>
+<td align="right">€567.23</td>
+<td align="right">€635.30</td>
+<td align="right">+€68.07</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klarwerk Stage Piano Pro 380 Blue</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-10-01</td>
+<td align="right">€558.65</td>
+<td align="right">€625.69</td>
+<td align="right">+€67.04</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">NordPA Power Amplifier Stage 513 Maple</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-04-01</td>
+<td align="right">€540.82</td>
+<td align="right">€605.72</td>
+<td align="right">+€64.90</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Velvet Oak Acoustic Guitar Pro 555 White</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-05-01</td>
+<td align="right">€504.43</td>
+<td align="right">€564.96</td>
+<td align="right">+€60.53</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonraum Keyboard Stand Vintage 107 Sunburst</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-10-01</td>
+<td align="right">€463.78</td>
+<td align="right">€519.43</td>
+<td align="right">+€55.65</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Folkraum Folk Guitar Pro 465 Cherry</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-04-01</td>
+<td align="right">€439.11</td>
+<td align="right">€491.80</td>
+<td align="right">+€52.69</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Bogen Drum Cymbal Performance 920 Black</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-03-01</td>
+<td align="right">€396.79</td>
+<td align="right">€444.40</td>
+<td align="right">+€47.61</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Windwerk Trumpet Deluxe 282 Green</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-05-01</td>
+<td align="right">€387.42</td>
+<td align="right">€433.91</td>
+<td align="right">+€46.49</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Westwerk Ukulele Stage 595 Transparent</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-08-01</td>
+<td align="right">€362.39</td>
+<td align="right">€405.88</td>
+<td align="right">+€43.49</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">GigGear Picks Stage 929 Vintage White</td>
+<td align="left">Accessories</td>
+<td align="right">2025-09-01</td>
+<td align="right">€333.85</td>
+<td align="right">€373.91</td>
+<td align="right">+€40.06</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonraum MIDI Keyboard Compact 352 Sunburst</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-06-01</td>
+<td align="right">€331.15</td>
+<td align="right">€370.89</td>
+<td align="right">+€39.74</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Orbis Winds Clarinet Pro 152 Navy</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-08-01</td>
+<td align="right">€297.09</td>
+<td align="right">€332.75</td>
+<td align="right">+€35.66</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ClubTone DJ Controller Deluxe 649 Natural</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-04-01</td>
+<td align="right">€287.90</td>
+<td align="right">€322.45</td>
+<td align="right">+€34.55</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Hanse Keys Digital Piano Vintage 735 Cherry</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-10-01</td>
+<td align="right">€240.60</td>
+<td align="right">€269.47</td>
+<td align="right">+€28.87</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klarwerk Synthesizer Compact 860 Transparent</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-04-01</td>
+<td align="right">€237.41</td>
+<td align="right">€265.90</td>
+<td align="right">+€28.49</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Holz &amp; Draht Folk Guitar Prime 109 Green</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-09-01</td>
+<td align="right">€231.81</td>
+<td align="right">€259.62</td>
+<td align="right">+€27.81</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Elbe Piano Keyboard Stand Studio 415 Sunburst</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-09-01</td>
+<td align="right">€211.66</td>
+<td align="right">€237.06</td>
+<td align="right">+€25.40</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Livehaus Power Amplifier Essential 543 Navy</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-02-01</td>
+<td align="right">€193.59</td>
+<td align="right">€216.83</td>
+<td align="right">+€23.24</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">BeatHaus Acoustic Drum Kit Essential 243 Green</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-07-01</td>
+<td align="right">€191.91</td>
+<td align="right">€214.94</td>
+<td align="right">+€23.03</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">NordPA Power Amplifier Mk II 132 Red</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-06-01</td>
+<td align="right">€182.13</td>
+<td align="right">€203.99</td>
+<td align="right">+€21.86</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ProSoundline Active Speaker Urban 938 Cherry</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-06-01</td>
+<td align="right">€181.41</td>
+<td align="right">€203.18</td>
+<td align="right">+€21.77</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klanghorn Flute Mk II 486 White</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-03-01</td>
+<td align="right">€175.97</td>
+<td align="right">€197.08</td>
+<td align="right">+€21.11</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Atemklang Clarinet Urban 594 Navy</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-03-01</td>
+<td align="right">€174.10</td>
+<td align="right">€194.99</td>
+<td align="right">+€20.89</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">SignalCraft Microphone Prime 687 Navy</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-02-01</td>
+<td align="right">€171.89</td>
+<td align="right">€192.51</td>
+<td align="right">+€20.62</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klanghorn Saxophone Compact 961 Vintage White</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-05-01</td>
+<td align="right">€130.58</td>
+<td align="right">€146.25</td>
+<td align="right">+€15.67</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">KiezStrings Mandolin Studio 449 Green</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-11-01</td>
+<td align="right">€125.38</td>
+<td align="right">€140.43</td>
+<td align="right">+€15.05</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Musikzubehör Nord Guitar Case Stage 737 Vintage White</td>
+<td align="left">Accessories</td>
+<td align="right">2025-07-01</td>
+<td align="right">€118.78</td>
+<td align="right">€133.04</td>
+<td align="right">+€14.26</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Klanghorn Saxophone Advanced 967 Vintage White</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-04-01</td>
+<td align="right">€118.79</td>
+<td align="right">€133.04</td>
+<td align="right">+€14.25</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Harper Tone Ukulele Vintage 913 Silver</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-07-01</td>
+<td align="right">€114.09</td>
+<td align="right">€127.79</td>
+<td align="right">+€13.70</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">ProSoundline Mixer Deluxe 430 Natural</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-01-01</td>
+<td align="right">€113.05</td>
+<td align="right">€126.62</td>
+<td align="right">+€13.57</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ClubTone Effect Machine Classic 189 Transparent</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-06-01</td>
+<td align="right">€112.32</td>
+<td align="right">€125.80</td>
+<td align="right">+€13.48</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Venue Audio Active Speaker Tour 269 Cherry</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-09-01</td>
+<td align="right">€109.35</td>
+<td align="right">€122.47</td>
+<td align="right">+€13.12</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonfabrik Audio Interface Prime 375 Green</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-01-01</td>
+<td align="right">€106.62</td>
+<td align="right">€119.42</td>
+<td align="right">+€12.80</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Musikzubehör Nord Power Supply Classic 249 Vintage White</td>
+<td align="left">Accessories</td>
+<td align="right">2025-07-01</td>
+<td align="right">€106.36</td>
+<td align="right">€119.13</td>
+<td align="right">+€12.77</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Hanse Keys MIDI Keyboard Select 859 Vintage White</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-01-01</td>
+<td align="right">€97.98</td>
+<td align="right">€109.74</td>
+<td align="right">+€11.76</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">StageCore Active Speaker Essential 443 Transparent</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-02-01</td>
+<td align="right">€95.01</td>
+<td align="right">€106.41</td>
+<td align="right">+€11.40</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">GigGear Strings Set Vintage 805 Vintage White</td>
+<td align="left">Accessories</td>
+<td align="right">2025-09-01</td>
+<td align="right">€92.83</td>
+<td align="right">€103.97</td>
+<td align="right">+€11.14</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Nightline LED Fixture Stage 436 Sunburst</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-06-01</td>
+<td align="right">€89.08</td>
+<td align="right">€99.77</td>
+<td align="right">+€10.69</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">CaseLab Capo Compact 44 Walnut</td>
+<td align="left">Accessories</td>
+<td align="right">2025-08-01</td>
+<td align="right">€80.35</td>
+<td align="right">€90.00</td>
+<td align="right">+€9.65</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">ClubTone DJ Mixer Vintage 79 Red</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-07-01</td>
+<td align="right">€79.87</td>
+<td align="right">€89.46</td>
+<td align="right">+€9.59</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Bergklang MIDI Keyboard Studio 277 Cherry</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-04-01</td>
+<td align="right">€74.43</td>
+<td align="right">€83.36</td>
+<td align="right">+€8.93</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Holz &amp; Draht Banjo Essential 149 Vintage White</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-05-01</td>
+<td align="right">€72.72</td>
+<td align="right">€81.45</td>
+<td align="right">+€8.73</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Saitenwerk Cello Classic 163 Natural</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-02-01</td>
+<td align="right">€66.57</td>
+<td align="right">€74.56</td>
+<td align="right">+€7.99</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">ProSoundline Mixer Stage 470 Black</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-05-01</td>
+<td align="right">€66.44</td>
+<td align="right">€74.41</td>
+<td align="right">+€7.97</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Venue Audio Wireless System Vintage 585 Black</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-09-01</td>
+<td align="right">€62.14</td>
+<td align="right">€69.60</td>
+<td align="right">+€7.46</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Mixwerk Mixer Deluxe 753 Blue</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-02-01</td>
+<td align="right">€61.49</td>
+<td align="right">€68.87</td>
+<td align="right">+€7.38</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Klanghorn Trombone Advanced 429 Vintage White</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-11-01</td>
+<td align="right">€60.86</td>
+<td align="right">€68.17</td>
+<td align="right">+€7.31</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">Bergklang MIDI Keyboard Vintage 525 Cherry</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-03-01</td>
+<td align="right">€60.50</td>
+<td align="right">€67.76</td>
+<td align="right">+€7.26</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonfabrik Microphone Select 295 Sunburst</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-10-01</td>
+<td align="right">€58.42</td>
+<td align="right">€65.43</td>
+<td align="right">+€7.01</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">BeatCircuit DJ Controller Stage 949 Maple</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-08-01</td>
+<td align="right">€58.17</td>
+<td align="right">€65.15</td>
+<td align="right">+€6.98</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Bergklang Stage Piano Tour 269 Maple</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-04-01</td>
+<td align="right">€46.00</td>
+<td align="right">€51.52</td>
+<td align="right">+€5.52</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">LightDeck Turntable Advanced 868 Transparent</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-04-01</td>
+<td align="right">€39.25</td>
+<td align="right">€43.96</td>
+<td align="right">+€4.71</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Orbis Winds Flute Select 895 Green</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-07-01</td>
+<td align="right">€32.61</td>
+<td align="right">€36.53</td>
+<td align="right">+€3.92</td>
+<td align="right">+12.02%</td>
+</tr>
+<tr>
+<td align="left">Rhythm Forge Acoustic Drum Kit Classic 912 Black</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-11-01</td>
+<td align="right">€31.47</td>
+<td align="right">€35.25</td>
+<td align="right">+€3.78</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">KiezStrings Violin Classic 646 Transparent</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-09-01</td>
+<td align="right">€30.24</td>
+<td align="right">€33.87</td>
+<td align="right">+€3.63</td>
+<td align="right">+12.00%</td>
+</tr>
+<tr>
+<td align="left">Tonfabrik Headphones Urban 538 Black</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-05-01</td>
+<td align="right">€27.48</td>
+<td align="right">€30.78</td>
+<td align="right">+€3.30</td>
+<td align="right">+12.01%</td>
+</tr>
+<tr>
+<td align="left">LightDeck DJ Mixer Stage 327 Transparent</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-10-01</td>
+<td align="right">€23.46</td>
+<td align="right">€21.21</td>
+<td align="right">-€2.25</td>
+<td align="right">-9.59%</td>
+</tr>
+<tr>
+<td align="left">Pick &amp; Plug Power Supply Performance 397 Green</td>
+<td align="left">Accessories</td>
+<td align="right">2025-08-01</td>
+<td align="right">€24.73</td>
+<td align="right">€22.26</td>
+<td align="right">-€2.47</td>
+<td align="right">-9.99%</td>
+</tr>
+<tr>
+<td align="left">Auralab Headphones Advanced 913 Black</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-06-01</td>
+<td align="right">€26.90</td>
+<td align="right">€24.21</td>
+<td align="right">-€2.69</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Rhythm Forge Snare Drum Mk II 962 Sunburst</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-11-01</td>
+<td align="right">€30.62</td>
+<td align="right">€27.56</td>
+<td align="right">-€3.06</td>
+<td align="right">-9.99%</td>
+</tr>
+<tr>
+<td align="left">Mixwerk Audio Interface Prime 882 Sunburst</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-11-01</td>
+<td align="right">€31.74</td>
+<td align="right">€28.57</td>
+<td align="right">-€3.17</td>
+<td align="right">-9.99%</td>
+</tr>
+<tr>
+<td align="left">Rhythm Forge Percussion Deluxe 180 Maple</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-05-01</td>
+<td align="right">€43.38</td>
+<td align="right">€39.04</td>
+<td align="right">-€4.34</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Nightline LED Fixture Classic 774 Cherry</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-02-01</td>
+<td align="right">€47.45</td>
+<td align="right">€42.86</td>
+<td align="right">-€4.59</td>
+<td align="right">-9.67%</td>
+</tr>
+<tr>
+<td align="left">SoundBasics Music Stool Deluxe 230 Cherry</td>
+<td align="left">Accessories</td>
+<td align="right">2025-09-01</td>
+<td align="right">€54.25</td>
+<td align="right">€48.83</td>
+<td align="right">-€5.42</td>
+<td align="right">-9.99%</td>
+</tr>
+<tr>
+<td align="left">Klangspur Audio Interface Pro 418 Maple</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-03-01</td>
+<td align="right">€57.74</td>
+<td align="right">€52.26</td>
+<td align="right">-€5.48</td>
+<td align="right">-9.49%</td>
+</tr>
+<tr>
+<td align="left">CableCraft Instrument Cable Pro 683 Natural</td>
+<td align="left">Accessories</td>
+<td align="right">2025-06-01</td>
+<td align="right">€61.16</td>
+<td align="right">€55.04</td>
+<td align="right">-€6.12</td>
+<td align="right">-10.01%</td>
+</tr>
+<tr>
+<td align="left">Alpenklang Folk Guitar Essential 96 Sunburst</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-01-01</td>
+<td align="right">€75.80</td>
+<td align="right">€68.22</td>
+<td align="right">-€7.58</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Tourwerk Active Speaker Deluxe 747 Navy</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-08-01</td>
+<td align="right">€79.21</td>
+<td align="right">€71.29</td>
+<td align="right">-€7.92</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">StompLab Acoustic Drum Kit Essential 932 Maple</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-06-01</td>
+<td align="right">€82.74</td>
+<td align="right">€74.47</td>
+<td align="right">-€8.27</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Mixwerk Microphone Studio 671 Vintage White</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-05-01</td>
+<td align="right">€84.43</td>
+<td align="right">€75.99</td>
+<td align="right">-€8.44</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Blech &amp; Holz Clarinet Stage 635 Maple</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-11-01</td>
+<td align="right">€92.56</td>
+<td align="right">€83.30</td>
+<td align="right">-€9.26</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bläserhaus Trumpet Pro 468 Vintage White</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-08-01</td>
+<td align="right">€94.89</td>
+<td align="right">€85.40</td>
+<td align="right">-€9.49</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">BeatHaus Snare Drum Tour 441 Blue</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-07-01</td>
+<td align="right">€95.14</td>
+<td align="right">€85.63</td>
+<td align="right">-€9.51</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bläserhaus Trombone Compact 954 Blue</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-09-01</td>
+<td align="right">€104.73</td>
+<td align="right">€94.26</td>
+<td align="right">-€10.47</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Klarwerk Digital Piano Vintage 435 Green</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-04-01</td>
+<td align="right">€122.01</td>
+<td align="right">€109.81</td>
+<td align="right">-€12.20</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Velvet Oak Classical Guitar Prime 933 Silver</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-05-01</td>
+<td align="right">€134.03</td>
+<td align="right">€121.28</td>
+<td align="right">-€12.75</td>
+<td align="right">-9.51%</td>
+</tr>
+<tr>
+<td align="left">Tourwerk Wireless System Performance 507 Natural</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-06-01</td>
+<td align="right">€132.91</td>
+<td align="right">€119.62</td>
+<td align="right">-€13.29</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Pick &amp; Plug Power Supply Prime 253 Sunburst</td>
+<td align="left">Accessories</td>
+<td align="right">2025-03-01</td>
+<td align="right">€214.18</td>
+<td align="right">€192.76</td>
+<td align="right">-€21.42</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Velvet Oak Classical Guitar Vintage 824 Silver</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-08-01</td>
+<td align="right">€217.65</td>
+<td align="right">€195.88</td>
+<td align="right">-€21.77</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">GigGear Guitar Case Essential 263 Navy</td>
+<td align="left">Accessories</td>
+<td align="right">2025-01-01</td>
+<td align="right">€259.70</td>
+<td align="right">€236.17</td>
+<td align="right">-€23.53</td>
+<td align="right">-9.06%</td>
+</tr>
+<tr>
+<td align="left">Tonraum Digital Piano Performance 327 Vintage White</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-10-01</td>
+<td align="right">€328.65</td>
+<td align="right">€295.79</td>
+<td align="right">-€32.86</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Rhythm Forge Electronic Drum Kit Classic 784 Walnut</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-05-01</td>
+<td align="right">€329.72</td>
+<td align="right">€296.83</td>
+<td align="right">-€32.89</td>
+<td align="right">-9.98%</td>
+</tr>
+<tr>
+<td align="left">Auralab Audio Interface Essential 50 Natural</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-02-01</td>
+<td align="right">€375.28</td>
+<td align="right">€337.75</td>
+<td align="right">-€37.53</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bogen Drum Acoustic Drum Kit Compact 898 Cherry</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-11-01</td>
+<td align="right">€476.75</td>
+<td align="right">€429.49</td>
+<td align="right">-€47.26</td>
+<td align="right">-9.91%</td>
+</tr>
+<tr>
+<td align="left">Bergklang Synthesizer Advanced 748 White</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-07-01</td>
+<td align="right">€571.15</td>
+<td align="right">€514.03</td>
+<td align="right">-€57.12</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Studiohaus Audio Interface Pro 149 Natural</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-10-01</td>
+<td align="right">€597.95</td>
+<td align="right">€538.16</td>
+<td align="right">-€59.79</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">BeatCircuit Effect Machine Tour 737 Green</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-11-01</td>
+<td align="right">€613.27</td>
+<td align="right">€551.94</td>
+<td align="right">-€61.33</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bogen Drum Electronic Drum Kit Stage 439 Black</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-10-01</td>
+<td align="right">€669.36</td>
+<td align="right">€602.43</td>
+<td align="right">-€66.93</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Blech &amp; Holz Trombone Prime 491 Black</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-11-01</td>
+<td align="right">€709.03</td>
+<td align="right">€638.13</td>
+<td align="right">-€70.90</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Klangwerk Cymbal Prime 752 Maple</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-11-01</td>
+<td align="right">€733.17</td>
+<td align="right">€659.86</td>
+<td align="right">-€73.31</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Pick &amp; Plug Stand Compact 421 Navy</td>
+<td align="left">Accessories</td>
+<td align="right">2025-08-01</td>
+<td align="right">€848.83</td>
+<td align="right">€772.14</td>
+<td align="right">-€76.69</td>
+<td align="right">-9.03%</td>
+</tr>
+<tr>
+<td align="left">Klarwerk Stage Piano Mk II 313 Silver</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-02-01</td>
+<td align="right">€810.61</td>
+<td align="right">€729.55</td>
+<td align="right">-€81.06</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">KiezStrings Banjo Pro 303 Natural</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-06-01</td>
+<td align="right">€990.35</td>
+<td align="right">€891.31</td>
+<td align="right">-€99.04</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Livehaus Power Amplifier Advanced 23 Green</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-10-01</td>
+<td align="right">€1,100.64</td>
+<td align="right">€990.57</td>
+<td align="right">-€110.07</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">SignalCraft Mixer Tour 65 Transparent</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-08-01</td>
+<td align="right">€1,160.20</td>
+<td align="right">€1,044.72</td>
+<td align="right">-€115.48</td>
+<td align="right">-9.95%</td>
+</tr>
+<tr>
+<td align="left">Altona Ukulele Deluxe 215 Green</td>
+<td align="left">Guitars &amp; Basses</td>
+<td align="right">2025-01-01</td>
+<td align="right">€1,503.26</td>
+<td align="right">€1,352.94</td>
+<td align="right">-€150.32</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Klangspur Audio Interface Compact 92 Maple</td>
+<td align="left">Studio &amp; Recording</td>
+<td align="right">2025-07-01</td>
+<td align="right">€1,539.19</td>
+<td align="right">€1,385.27</td>
+<td align="right">-€153.92</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">ProSoundline Active Speaker Tour 911 Black</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-10-01</td>
+<td align="right">€1,867.20</td>
+<td align="right">€1,693.34</td>
+<td align="right">-€173.86</td>
+<td align="right">-9.31%</td>
+</tr>
+<tr>
+<td align="left">Elbe Piano Digital Piano Performance 37 Walnut</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-08-01</td>
+<td align="right">€1,865.95</td>
+<td align="right">€1,687.40</td>
+<td align="right">-€178.55</td>
+<td align="right">-9.57%</td>
+</tr>
+<tr>
+<td align="left">ClubTone LED Fixture Prime 357 Cherry</td>
+<td align="left">DJ &amp; Lighting</td>
+<td align="right">2025-05-01</td>
+<td align="right">€1,886.26</td>
+<td align="right">€1,697.63</td>
+<td align="right">-€188.63</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bergklang MIDI Keyboard Deluxe 897 Navy</td>
+<td align="left">Keyboards &amp; Pianos</td>
+<td align="right">2025-08-01</td>
+<td align="right">€2,326.09</td>
+<td align="right">€2,093.48</td>
+<td align="right">-€232.61</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">GigGear Guitar Case Vintage 31 Silver</td>
+<td align="left">Accessories</td>
+<td align="right">2025-10-01</td>
+<td align="right">€2,367.35</td>
+<td align="right">€2,130.61</td>
+<td align="right">-€236.74</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Bläserhaus Trombone Stage 740 Walnut</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-09-01</td>
+<td align="right">€2,463.76</td>
+<td align="right">€2,217.38</td>
+<td align="right">-€246.38</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">KiezStrings Banjo Classic 159 Walnut</td>
+<td align="left">Strings &amp; Folk</td>
+<td align="right">2025-02-01</td>
+<td align="right">€2,617.93</td>
+<td align="right">€2,356.14</td>
+<td align="right">-€261.79</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Pick &amp; Plug Picks Vintage 987 Sunburst</td>
+<td align="left">Accessories</td>
+<td align="right">2025-03-01</td>
+<td align="right">€2,961.87</td>
+<td align="right">€2,690.29</td>
+<td align="right">-€271.58</td>
+<td align="right">-9.17%</td>
+</tr>
+<tr>
+<td align="left">Windwerk Clarinet Compact 274 Green</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-10-01</td>
+<td align="right">€2,750.56</td>
+<td align="right">€2,475.51</td>
+<td align="right">-€275.05</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">Atemklang Saxophone Select 506 Black</td>
+<td align="left">Brass &amp; Woodwinds</td>
+<td align="right">2025-03-01</td>
+<td align="right">€2,825.75</td>
+<td align="right">€2,543.17</td>
+<td align="right">-€282.58</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">StompLab Snare Drum Mk II 504 Black</td>
+<td align="left">Drums &amp; Percussion</td>
+<td align="right">2025-04-01</td>
+<td align="right">€4,410.84</td>
+<td align="right">€3,996.99</td>
+<td align="right">-€413.85</td>
+<td align="right">-9.38%</td>
+</tr>
+<tr>
+<td align="left">Venue Audio Passive Speaker Prime 797 Vintage White</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-02-01</td>
+<td align="right">€5,283.48</td>
+<td align="right">€4,755.13</td>
+<td align="right">-€528.35</td>
+<td align="right">-10.00%</td>
+</tr>
+<tr>
+<td align="left">NordPA Wireless System Studio 715 Vintage White</td>
+<td align="left">PA &amp; Live Sound</td>
+<td align="right">2025-11-01</td>
+<td align="right">€6,805.01</td>
+<td align="right">€6,171.47</td>
+<td align="right">-€633.54</td>
+<td align="right">-9.31%</td>
+</tr>
+</tbody>
+</table>
+<p><span id="tab:tab20"></span>Table 5.22: Products in 2025 with the
+strongest (positive and negative) relative price changes.</p>
 <h3 id="5-4-2-what-happened-to-sales-volumes-after-price-changes">5.4.2 What happened to sales volumes after price changes?</h3>
 <h3 id="5-4-3-which-products-increased-in-price-without-losing-much-volume">5.4.3 Which products increased in price without losing much volume?</h3>
 <h3 id="5-4-4-which-products-became-cheaper-but-sold-considerably-more">5.4.4 Which products became cheaper but sold considerably more?</h3>

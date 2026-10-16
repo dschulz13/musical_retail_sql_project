@@ -325,8 +325,14 @@ WHERE year_numb = 2025
 ORDER BY month_numb ASC)
 SELECT month_name, CONCAT('€', FORMAT(total_sales_2024, 2)) AS total_sales_2024,
 	CONCAT('€', FORMAT(total_sales_2025, 2)) AS total_sales_2025,
-    CONCAT('€', FORMAT(total_sales_2025 - total_sales_2024, 2)) AS abs_change,
-    CONCAT(ROUND(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%') AS rel_change
+	CASE
+    WHEN total_sales_2025 - total_sales_2024 >= 0 THEN CONCAT('+€', FORMAT(total_sales_2025 - total_sales_2024, 2))
+    WHEN total_sales_2025 - total_sales_2024 < 0 THEN CONCAT('-€', FORMAT(ABS(total_sales_2025 - total_sales_2024), 2))
+  END AS abs_change,
+  CASE
+    WHEN 100 * (total_sales_2025 - total_sales_2024) / total_sales_2024 >= 0 THEN CONCAT('+', FORMAT(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024, 2), '%')
+    WHEN 100 * (total_sales_2025 - total_sales_2024) / total_sales_2024 < 0 THEN CONCAT('-', FORMAT(ABS(100 * (total_sales_2025 - total_sales_2024) / total_sales_2024), 2), '%')
+  END AS rel_change
 FROM comp_tab;
 ```
 
@@ -370,9 +376,19 @@ SELECT year_numb, month_numb, month_name, LAG(revenue, 3) OVER (PARTITION BY mon
     LAG(revenue, 1) OVER (PARTITION BY month_numb ORDER BY year_numb ASC) AS rev_2024,
     revenue AS rev_2025
 FROM agg_tab)
-SELECT month_name, CONCAT(ROUND(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%') AS change_22_23,
-	CONCAT(ROUND(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%') AS change_23_24,
-    CONCAT(ROUND(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%') AS change_24_25
+SELECT month_name,
+  CASE
+    WHEN 100 * (rev_2023 - rev_2022) / rev_2022 >= 0 THEN CONCAT('+', FORMAT(100 * (rev_2023 - rev_2022) / rev_2022, 2), '%')
+    WHEN 100 * (rev_2023 - rev_2022) / rev_2022 < 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2023 - rev_2022) / rev_2022), 2), '%')
+  END AS change_22_23,
+  CASE
+    WHEN 100 * (rev_2024 - rev_2023) / rev_2023 >= 0 THEN CONCAT('+', FORMAT(100 * (rev_2024 - rev_2023) / rev_2023, 2), '%')
+    WHEN 100 * (rev_2024 - rev_2023) / rev_2023 < 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2024 - rev_2023) / rev_2023), 2), '%')
+  END AS change_23_24,
+  CASE
+    WHEN 100 * (rev_2025 - rev_2024) / rev_2024 >= 0 THEN CONCAT('+', FORMAT(100 * (rev_2025 - rev_2024) / rev_2024, 2), '%')
+    WHEN 100 * (rev_2025 - rev_2024) / rev_2024 < 0 THEN CONCAT('-', FORMAT(ABS(100 * (rev_2025 - rev_2024) / rev_2024), 2), '%')
+  END AS change_24_25
 FROM lag_tab
 WHERE year_numb = 2025
 ORDER BY month_numb;
@@ -1415,7 +1431,15 @@ change_tab AS (
 SELECT customer_id, revenue2024, revenue2025, revenue2025 - revenue2024 AS revenue_shift, 100 * (revenue2025 - revenue2024) / revenue2024 AS revenue_change_rel
 FROM lag_tab
 WHERE sale_year = 2025 AND revenue2024 IS NOT NULL)
-SELECT CONCAT('€', FORMAT(AVG(revenue_shift), 2)) AS mean_abs_change, CONCAT(FORMAT(AVG(revenue_change_rel), 2), '%') AS mean_rel_change
+SELECT
+  CASE
+    WHEN AVG(revenue_shift) >= 0 THEN CONCAT('+€', FORMAT(AVG(revenue_shift), 2))
+    WHEN AVG(revenue_shift) < 0 THEN CONCAT('-€', FORMAT(ABS(AVG(revenue_shift)), 2))
+  END AS mean_abs_change, 
+  CASE
+    WHEN AVG(revenue_change_rel) >= 0 THEN CONCAT('+', FORMAT(AVG(revenue_change_rel), 2), '%')
+    WHEN AVG(revenue_change_rel) < 0 THEN CONCAT('-', FORMAT(ABS(AVG(revenue_change_rel)), 2), '%')
+  END AS mean_rel_change
 FROM change_tab;
 ```
 
@@ -1614,7 +1638,7 @@ SELECT it.product_name, it.category,
 	FORMAT(SUM(dt.units_sold_2025), 0) AS units_sold,
     FORMAT(SUM(dt.change_us_abs), 0) AS increase_units_sold,
 	CONCAT('€', FORMAT(SUM(dt.revenue_2025), 2)) AS revenue,
-    CONCAT('€', FORMAT(SUM(dt.change_rev_abs), 2)) AS increase_revenue
+    CONCAT('+€', FORMAT(SUM(dt.change_rev_abs), 2)) AS increase_revenue
 FROM idx_tab AS it
 INNER JOIN diff_tab AS dt ON it.product_id = dt.product_id
 WHERE it.idx = 4
@@ -1821,6 +1845,50 @@ x
 ## Pricing
 
 ### Which products experienced major price changes?
+
+**SQL approach for Table \@ref(tab:tab20)**
+
+`r start_code()`
+
+```{sql connection = con, output.var = "sql_q18", warning = FALSE, echo = TRUE, purl = sql_chunk_activator(export_type)}
+WITH join_tab AS (
+SELECT pr.product_id, pr.product_name, pr.category, pr.available_from, pp.offered_price_eur, pp.introduced_at
+FROM products_cleaned AS pr
+INNER JOIN product_prices AS pp ON pr.product_id = pp.product_id
+WHERE EXTRACT(YEAR FROM available_from) < 2025),
+lag_tab AS (
+SELECT product_id, product_name, category, available_from, offered_price_eur, introduced_at, LAG(offered_price_eur, 1) OVER (PARTITION BY product_id ORDER BY introduced_at ASC) AS offered_price_eur_lag1
+FROM join_tab),
+fin_tab AS (
+SELECT product_id, product_name, category, introduced_at, offered_price_eur_lag1 AS previous_price, offered_price_eur AS new_price,
+	offered_price_eur - offered_price_eur_lag1 AS price_change,
+	ROUND(100 * (offered_price_eur - offered_price_eur_lag1) / offered_price_eur_lag1, 2) AS rel_price_change
+FROM lag_tab
+WHERE EXTRACT(YEAR FROM introduced_at) = 2025
+ORDER BY product_id ASC, introduced_at ASC)
+SELECT product_name, category, DATE_FORMAT(introduced_at, '%Y-%m-%d') AS introduced_at,
+	CONCAT('€', FORMAT(previous_price, 2)) AS previous_price,
+    CONCAT('€', FORMAT(new_price, 2)) AS new_price,
+	CASE
+		WHEN price_change >= 0 THEN CONCAT('+€', FORMAT(price_change, 2))
+        WHEN price_change < 0 THEN CONCAT('-€', FORMAT(ABS(price_change), 2))
+	END AS price_change_abs,
+    CASE
+		WHEN rel_price_change >= 0 THEN CONCAT('+', FORMAT(rel_price_change, 2), '%')
+        WHEN rel_price_change < 0 THEN CONCAT('-', FORMAT(ABS(rel_price_change), 2), '%')
+	END AS rel_price_change
+FROM fin_tab
+WHERE rel_price_change >= 12 OR rel_price_change <= -9
+ORDER BY price_change DESC;
+```
+
+`r end_code()`
+
+```{r tab20, echo = FALSE}
+x <- knitr::kable(sql_q18,
+             col.names = c("Product", "Category", "New price date", "Old price", "New price", 'Price change (abs.)', 'Price change (rel.)'), align = c("l", "l", "r", "r", "r", "r", "r"), caption = "Products in 2025 with the strongest (positive and negative) relative price changes.", format = "pipe")
+x
+```
 
 ### What happened to sales volumes after price changes?
 
