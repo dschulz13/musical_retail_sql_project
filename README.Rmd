@@ -90,7 +90,7 @@ The database contains eight interconnected tables: `sales`, `sale_items`, `produ
 
 # Objectives
 
-The data supports six broad business topics, each with several sub-questions. They help determining the current state of the company at the end of the year 2025. This project aims to address the presented questions as the analysis is developed.
+The data supports, among others, four broad business topics, each with several sub-questions. They help determining the current state of the company at the end of the year 2025. This project aims to address the presented questions as the analysis is developed.
 
 1. **Revenue & sales performance**
   - How much was sold in 2025?
@@ -123,20 +123,6 @@ The data supports six broad business topics, each with several sub-questions. Th
   - Which products became cheaper but sold considerably more?
   - Which brands/categories have the highest prices?
   
-5. **Inventory health**
-  - Which products are overstocked?
-  - Which products have very high inventory turnover?
-  - Which products appear to be slow-moving?
-  - How much capital is tied up in inventory?
-  - Are discontinued products still sitting in inventory?
-  - Which products might need replenishment?
-  
-6. **Supplier health**
-  - Which suppliers provide the most products?
-  - Which suppliers account for the most incoming units?
-  - Is the company highly dependent on a small number of suppliers?
-  - Which suppliers serve strategically important products?
-  - What does the supplier base look like geographically?
 
 # Applied tools
 
@@ -1898,31 +1884,7 @@ x
 
 ### Which brands/categories have the highest prices?
 
-## Inventory health
 
-### Which products are overstocked?
-
-### Which products have very high inventory turnover?
-
-### Which products appear to be slow-moving?
-
-### How much capital is tied up in inventory?
-
-### Are discontinued products still sitting in inventory?
-
-### Which products might need replenishment?
-
-## Supplier health
-
-### Which suppliers provide the most products?
-
-### Which suppliers account for the most incoming units?
-
-### Is the company highly dependent on a small number of suppliers?
-
-### Which suppliers serve strategically important products?
-
-### What does the supplier base look like geographically?
 
 
 

@@ -131,8 +131,6 @@ October 16, 2026</p>
 <li><a href="#52-customer-health">5.2 Customer health</a></li>
 <li><a href="#53-product-portfolio">5.3 Product portfolio</a></li>
 <li><a href="#54-pricing">5.4 Pricing</a></li>
-<li><a href="#55-inventory-health">5.5 Inventory health</a></li>
-<li><a href="#56-supplier-health">5.6 Supplier health</a></li>
 </ul>
 </li>
 </ul>
@@ -171,10 +169,10 @@ structure of the musical_retail_germany SQL database.</p>
 <code>sale_items</code>, <code>products</code>, <code>product_prices</code>, <code>customers</code>, <code>suppliers</code>,
 <code>inventory_in</code>, and <code>inventory_out</code>.</p>
 <h1 id="3-objectives">3 Objectives</h1>
-<p>The data supports six broad business topics, each with several
-sub-questions. They help determining the current state of the company at
-the end of the year 2025. This project aims to address the presented
-questions as the analysis is developed.</p>
+<p>The data supports, among others, four broad business topics, each with
+several sub-questions. They help determining the current state of the
+company at the end of the year 2025. This project aims to address the
+presented questions as the analysis is developed.</p>
 <ol>
 <li><strong>Revenue &amp; sales performance</strong></li>
 </ol>
@@ -220,27 +218,6 @@ questions as the analysis is developed.</p>
 <li>Which products increased in price without losing much volume?</li>
 <li>Which products became cheaper but sold considerably more?</li>
 <li>Which brands/categories have the highest prices?</li>
-</ul>
-<ol start="5">
-<li><strong>Inventory health</strong></li>
-</ol>
-<ul>
-<li>Which products are overstocked?</li>
-<li>Which products have very high inventory turnover?</li>
-<li>Which products appear to be slow-moving?</li>
-<li>How much capital is tied up in inventory?</li>
-<li>Are discontinued products still sitting in inventory?</li>
-<li>Which products might need replenishment?</li>
-</ul>
-<ol start="6">
-<li><strong>Supplier health</strong></li>
-</ol>
-<ul>
-<li>Which suppliers provide the most products?</li>
-<li>Which suppliers account for the most incoming units?</li>
-<li>Is the company highly dependent on a small number of suppliers?</li>
-<li>Which suppliers serve strategically important products?</li>
-<li>What does the supplier base look like geographically?</li>
 </ul>
 <h1 id="4-applied-tools">4 Applied tools</h1>
 <p>Data manipulation, calculations and table creations are performed in
@@ -5125,19 +5102,6 @@ strongest (positive and negative) relative price changes.</p>
 <h3 id="5-4-3-which-products-increased-in-price-without-losing-much-volume">5.4.3 Which products increased in price without losing much volume?</h3>
 <h3 id="5-4-4-which-products-became-cheaper-but-sold-considerably-more">5.4.4 Which products became cheaper but sold considerably more?</h3>
 <h3 id="5-4-5-which-brands-categories-have-the-highest-prices">5.4.5 Which brands/categories have the highest prices?</h3>
-<h2 id="5-5-inventory-health">5.5 Inventory health</h2>
-<h3 id="5-5-1-which-products-are-overstocked">5.5.1 Which products are overstocked?</h3>
-<h3 id="5-5-2-which-products-have-very-high-inventory-turnover">5.5.2 Which products have very high inventory turnover?</h3>
-<h3 id="5-5-3-which-products-appear-to-be-slow-moving">5.5.3 Which products appear to be slow-moving?</h3>
-<h3 id="5-5-4-how-much-capital-is-tied-up-in-inventory">5.5.4 How much capital is tied up in inventory?</h3>
-<h3 id="5-5-5-are-discontinued-products-still-sitting-in-inventory">5.5.5 Are discontinued products still sitting in inventory?</h3>
-<h3 id="5-5-6-which-products-might-need-replenishment">5.5.6 Which products might need replenishment?</h3>
-<h2 id="5-6-supplier-health">5.6 Supplier health</h2>
-<h3 id="5-6-1-which-suppliers-provide-the-most-products">5.6.1 Which suppliers provide the most products?</h3>
-<h3 id="5-6-2-which-suppliers-account-for-the-most-incoming-units">5.6.2 Which suppliers account for the most incoming units?</h3>
-<h3 id="5-6-3-is-the-company-highly-dependent-on-a-small-number-of-suppliers">5.6.3 Is the company highly dependent on a small number of suppliers?</h3>
-<h3 id="5-6-4-which-suppliers-serve-strategically-important-products">5.6.4 Which suppliers serve strategically important products?</h3>
-<h3 id="5-6-5-what-does-the-supplier-base-look-like-geographically">5.6.5 What does the supplier base look like geographically?</h3>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>

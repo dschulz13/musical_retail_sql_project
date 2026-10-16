@@ -12,8 +12,6 @@ October 16, 2026
   - [5.2 Customer health](#52-customer-health)
   - [5.3 Product portfolio](#53-product-portfolio)
   - [5.4 Pricing](#54-pricing)
-  - [5.5 Inventory health](#55-inventory-health)
-  - [5.6 Supplier health](#56-supplier-health)
 
 **Note:** This entire project is currently a work in progress and not
 yet finished. It will be updated regularly.
@@ -61,10 +59,10 @@ The database contains eight interconnected tables: `sales`,
 
 # 3 Objectives
 
-The data supports six broad business topics, each with several
-sub-questions. They help determining the current state of the company at
-the end of the year 2025. This project aims to address the presented
-questions as the analysis is developed.
+The data supports, among others, four broad business topics, each with
+several sub-questions. They help determining the current state of the
+company at the end of the year 2025. This project aims to address the
+presented questions as the analysis is developed.
 
 1.  **Revenue & sales performance**
 
@@ -100,23 +98,6 @@ questions as the analysis is developed.
 - Which products increased in price without losing much volume?
 - Which products became cheaper but sold considerably more?
 - Which brands/categories have the highest prices?
-
-5.  **Inventory health**
-
-- Which products are overstocked?
-- Which products have very high inventory turnover?
-- Which products appear to be slow-moving?
-- How much capital is tied up in inventory?
-- Are discontinued products still sitting in inventory?
-- Which products might need replenishment?
-
-6.  **Supplier health**
-
-- Which suppliers provide the most products?
-- Which suppliers account for the most incoming units?
-- Is the company highly dependent on a small number of suppliers?
-- Which suppliers serve strategically important products?
-- What does the supplier base look like geographically?
 
 # 4 Applied tools
 
@@ -2315,29 +2296,3 @@ strongest (positive and negative) relative price changes.
 ### 5.4.4 Which products became cheaper but sold considerably more?
 
 ### 5.4.5 Which brands/categories have the highest prices?
-
-## 5.5 Inventory health
-
-### 5.5.1 Which products are overstocked?
-
-### 5.5.2 Which products have very high inventory turnover?
-
-### 5.5.3 Which products appear to be slow-moving?
-
-### 5.5.4 How much capital is tied up in inventory?
-
-### 5.5.5 Are discontinued products still sitting in inventory?
-
-### 5.5.6 Which products might need replenishment?
-
-## 5.6 Supplier health
-
-### 5.6.1 Which suppliers provide the most products?
-
-### 5.6.2 Which suppliers account for the most incoming units?
-
-### 5.6.3 Is the company highly dependent on a small number of suppliers?
-
-### 5.6.4 Which suppliers serve strategically important products?
-
-### 5.6.5 What does the supplier base look like geographically?
